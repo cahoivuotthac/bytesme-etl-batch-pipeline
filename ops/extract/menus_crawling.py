@@ -3,9 +3,10 @@ from urllib.error import HTTPError
 from urllib.parse import urljoin, urlparse
 from urllib.request import urlopen, Request
 from bs4 import BeautifulSoup
-from utils.logging_config import setup_logging
+from utils.logging_config import setup_logging, load_config
 
 logger = setup_logging()
+config = load_config("webs_cake_config.yml")
 
 def is_parent_category(url_list, url):
 	parsed_url = urlparse(url)
@@ -20,7 +21,7 @@ def is_parent_category(url_list, url):
 
 def scrape_website(link, tag_name, menu_selector, filter_keyword):
 	all_list = []
-	user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36"
+	user_agent = config["http"]["user_agent"]
 	
 	try: 
 		req = Request(
@@ -42,7 +43,7 @@ def scrape_website(link, tag_name, menu_selector, filter_keyword):
 				if (filter_keyword == "None" or filter_keyword in url) \
     				and url not in all_list: 
 
-					# ensure url start with https
+					# ensure absolute url 
 					if not url.startswith('https://'):
 						url = urljoin(link, url)
 

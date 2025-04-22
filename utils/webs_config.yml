@@ -1,0 +1,78 @@
+templates: 
+  defaults: &defaults 
+    page: 
+      page_number: "all"
+    # dataframe: 
+    #   header: False
+    #   encoding: "utf-8-sig"
+    #   index: False
+
+http: 
+  user_agent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36"
+
+websites:
+  # tljus:
+  #   path:
+  #     website_path: https://tljus.com/
+  #     save_path: data/urls/
+  #   <<: *defaults
+  #   scraping: 
+  #     tag_name: nav
+  #     menu_selector: dropdown-list-8 
+  #     filter-keyword: None
+
+  #     # tab-based navigation 
+  #     menu_type: "tabs"
+  #     subcategory_selector: ".menu-tab"
+
+  breadtalk:
+    path: 
+      website_path: https://breadtalkvietnam.com/
+      save_path: data/urls/
+    <<: *defaults
+    scraping: 
+      tag_name: li
+      menu_selector: menu-item  
+      filter-keyword: product-category
+
+      loading_type: pagination 
+      pagination: 
+        next_selector: ".next"
+
+      product_tag: a
+      product_selector: .d-block 
+      product_detail_selectors:
+        name: .product_title
+        description: None 
+        unit_price: .woocommerce-Price-amount bdi
+        currency: .woocommerce-Price-currencySymbol 
+        image_selector: .swiper
+        original_category: .posted_in
+        
+  # panacota: 
+  #   path: 
+  #     website_path: https://www.panacota.vn/
+  #     save_path: data/urls/
+  #   <<: *defaults
+  #   scraping: 
+  #     tag_name: li
+  #     menu_selector: item-lv1
+  #     filter-keyword: collections
+
+  #     loading_type: progressive # use selenium to extract data 
+  #     progressive_loading: 
+  #       type: "load_more_button" # clicked-based progressive loading
+  #       button_selector: ".loadmore-collection button"
+  #       data_attributes: 
+  #         product_count: "data-productcount"
+  #         products_per_page: "data-paginate"
+
+  # cailonuong: 
+  #   path: 
+  #     website_path: https://cailonuong.com/
+  #     save_path: data/urls/
+  #   <<: *defaults
+  #   scraping: 
+  #     tag_name: ul
+  #     menu_selector: sub-menu
+  #     filter-keyword: danh-muc-san-pham

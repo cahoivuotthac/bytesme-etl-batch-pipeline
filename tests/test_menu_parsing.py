@@ -1,20 +1,19 @@
+import json
 import os
 import pandas as pd
 import yaml
-from web_etl_pipeline.ops.parsing.menus_crawling import scrape_website
-from web_etl_pipeline.utils.logging_config import setup_logging
+from ops.extract.menus_crawling import scrape_website
+from utils.logging_config import setup_logging, load_config
 
 results = {}
 logger = setup_logging()
+config = load_config("webs_cake_config.yml")
 
 def test_menu_parsing():
-	config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 
-                              'utils', 'parse_config.yml') # utls/parse_config.yml
-	with open(config_path, 'r') as file:
-		config = yaml.safe_load(file)
 	
 	website_config = config.get('websites', {})
-	
+ 
+	dict_ = {}	
 	for site_name, site_config in website_config.items():
 		try: 
 			logger.info(f"Testing menu parsing for {site_name}")
@@ -35,13 +34,19 @@ def test_menu_parsing():
 			save_path = site_config['path']['save_path']
 			os.makedirs(save_path, exist_ok=True)
    
-			df = pd.DataFrame(data=menu_urls, columns=["URL"])
-			df.to_csv(
-       			f"{save_path}/{site_name}_urls.csv",
-          		index=site_config['dataframe']['index'],
-				header=site_config['dataframe']['header'],
-				encoding=site_config['dataframe']['encoding']
-			)
+			# df = pd.DataFrame(data=menu_urls, columns=["URL"])
+			
+			# breadtalk website met the urls duplication 
+			# df = df.drop_duplicates()
+   
+			# df.to_csv(
+       		# 	f"{save_path}/{site_name}_urls.csv",
+          	# 	index=site_config['dataframe']['index'],
+			# 	header=site_config['dataframe']['header'],
+			# 	encoding=site_config['dataframe']['encoding']
+			# )
+   
+			dict_[site_name] = menu_urls 
    
 		except Exception as e: 
 			logger.error(f"Error parsing {site_name}: {str(e)}")
@@ -49,6 +54,9 @@ def test_menu_parsing():
 				'success': False,
 				'error': str(e)
 			}
+   
+	with open('data/test/category_urls.json', "w") as file:
+		json.dump(dict_, file, indent=4)
 
 	return results 
 
