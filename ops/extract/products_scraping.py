@@ -1,9 +1,9 @@
 from dataclasses import dataclass, field
 import re
+import tempfile
 import time
 from typing import Dict, List
-from urllib.parse import urljoin, urlparse
-from urllib.request import Request, urlopen
+from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 import requests
 from utils.logging_config import setup_logging, load_config
@@ -23,7 +23,7 @@ SCROLL_PAUSE_TIME = 2
 
 @dataclass 
 class ProductInfo:
-    
+	
 	# metadata 
 	product_name: str
 	product_url: str
@@ -56,10 +56,7 @@ class ProductExtractor:
 	
 	def process_pages(self, category_url: str) -> List[ProductInfo]:
 		logger.info(f"Extracting products from: ({category_url})")
-		logger.debug(f"Website config: {self.website_config}")
-		logger.debug(f"Scraping config: {self.scraping_config}")
-		logger.debug(f"Loading type: {self.scraping_config.get('loading_type', 'single-page')}")
-    
+	
 		all_products = []
 		current_page = category_url # first page 
 
@@ -76,10 +73,11 @@ class ProductExtractor:
 	
 	def _crawl_pagination(self, url: str, isSingle: bool) -> List[ProductInfo]:
 		products = []
-		next_selector = self.scraping_config["pagination"]["next_selector"]
-		
+		if not isSingle:
+			next_selector = self.scraping_config["pagination"]["next_selector"]
+			logger.debug(f"Next selector: {next_selector}")
+   
 		logger.info("Start pagination crawling ...")
-		logger.debug(f"Next selector: {next_selector}")
 		
 		while url: 
 			try:
@@ -89,11 +87,11 @@ class ProductExtractor:
 				}
 				html = requests.get(url, headers=headers)
 				bs = BeautifulSoup(html.content, "html5lib")
-    
+	
 				products_info = self._crawl_each_page(bs)
 				products.extend(products_info)
 
-				if isSingle == False:
+				if not isSingle:
 					next_page = bs.select_one(next_selector)
 					url = next_page.get('href') if next_page else None 
 				else:
@@ -105,63 +103,93 @@ class ProductExtractor:
 		return products
 
 	def _crawl_progessive(self, url: str) -> List[ProductInfo]:
-
 		options = Options()
-		options.add_argument('--headless')
+  
+		# options.add_argument('--headless')
 		options.add_argument('--no-sandbox')
 		options.add_argument('--disable-dev-shm-usage')
 		options.add_argument('--disable-blink-features=AutomationControlled')
 		options.add_argument(f'--user-agent={web_config["http"]["user_agent"]}')
 		options.add_experimental_option("excludeSwitches", ["enable-automation"])
 		options.add_experimental_option('useAutomationExtension', False)
-		
+  
 		try:
 			driver = webdriver.Chrome(
-		        service=Service(ChromeDriverManager().install()),
-		        options=options
-		    )
+				service=Service(ChromeDriverManager().install()),
+				options=options
+			)
    
 			driver.execute_script("""
-	            // Add headers to XMLHttpRequest
-	            (function(open) {
-	                XMLHttpRequest.prototype.open = function() {
-	                    open.apply(this, arguments);
-	                    this.setRequestHeader('User-Agent', arguments[1].indexOf('localhost') > -1 ? '' : 'Mozilla/5.0');
-	                    this.setRequestHeader('Accept', '*/*');
-	                };
-	            })(XMLHttpRequest.prototype.open);
-	        """)
+				(function(open) {
+					XMLHttpRequest.prototype.open = function() {
+						open.apply(this, arguments);
+						this.setRequestHeader('User-Agent', arguments[1].indexOf('localhost') > -1 ? '' : 'Mozilla/5.0');
+						this.setRequestHeader('Accept', '*/*');
+					};
+				})(XMLHttpRequest.prototype.open);
+			""")
    
-			logger.info(f"Starting progressive scroll extraction from: {url}")
+			logger.info(f"Starting progressive extraction from: {url}")
 			driver.get(url)
 			
-			while True:
+			# wait for the page to be fully loaded 
+			time.sleep(3)
+   
+			products_info = []
+			max_attemps = 5
+			attempt_count = 0
+   
+			while attempt_count < max_attemps:
 				try: 
-					load_more_button = driver.find_element(By.CLASS_NAME, self.scraping_config["progressive_loading"]["button_selector"])
-					load_more_button.click()
-					time.sleep(SCROLL_PAUSE_TIME)
+					# Try scrolling to make button visible
+					driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+					time.sleep(1)
+	 
+					# button selector is a CSS selector including both a class and an element
+					load_more_button = driver.find_element(By.CSS_SELECTOR, self.scraping_config["button_selector"])
+					while load_more_button and load_more_button.is_displayed():
+						logger.debug(f"Load More button found: {load_more_button}")
+						
+						driver.execute_script("arguments[0].scrollIntoView(true);", load_more_button)
+						logger.debug("Clicked the Load More button.")
 		 
+						driver.execute_script("arguments[0].click();", load_more_button)
+						time.sleep(SCROLL_PAUSE_TIME)
+						load_more_button = driver.find_element(By.CSS_SELECTOR, self.scraping_config["button_selector"])
+      
+					break 
+ 
 				except NoSuchElementException:
 					logger.info("No more loadmore button founded")
 					break 
-	 
+
 				except ElementClickInterceptedException:
 					logger.info("Button is not clickable right now ...")
+					attempt_count += 1
+					if attempt_count == max_attemps:
+						break 
 					time.sleep(SCROLL_PAUSE_TIME)
-
+					continue 
+ 
+			logger.info("Out of the loop")
 			html = driver.page_source
-			bs = BeautifulSoup(html, "html5lib")
-			products_info = self._crawl_each_page(bs)
-	   
-			driver.quit()
-	   
-			return products_info
+			bs = BeautifulSoup(html, 'html5lib')
+			current_products = self._crawl_each_page(bs)
+			logger.debug(f"Extracted {len(current_products)} products from the current page.")
+			if not current_products:
+				logger.warning("No products found on the current page.")
 
+			products_info.extend(current_products)
+     
 		except Exception as e:
-				logger.error(f"Error during progressive scrolling: {str(e)}")
-				if 'driver' in locals():
-					driver.quit()
-				return []
+			logger.error(f"WebDriver error: {str(e)}")
+			return []
+
+		finally: 
+			if driver in locals():
+				driver.quit()
+    
+		return products_info
 
 	def _crawl_each_page(self, bs: BeautifulSoup) -> List[ProductInfo]:
 		products= []
@@ -170,11 +198,15 @@ class ProductExtractor:
 		product_selector = self.scraping_config["product_selector"]
 		product_cards = bs.find_all(
 	   		product_tag, 
-	      	class_=re.compile(product_selector.replace(".", ""))
-	    )
+		  	class_=re.compile(product_selector.replace(".", ""))
+		)
 
 		for card in product_cards:
 			product_url = card.get('href')
+			if not product_url:
+				anchor = card.find('a')
+				if anchor:
+					product_url = anchor.get('href')
 			logger.debug(f"Product url: {product_url}")
 
 			# make url absolute if it's relative 
@@ -213,12 +245,19 @@ class ProductExtractor:
 
 			# price, currency
 			price_elem = bs.select_one(detail_selectors.get("unit_price", ""))
-			logger.debug(f"Raw price element: {price_elem}")
+			logger.debug(f"Raw price element HTML: {price_elem}")
 			if price_elem:
 				try:
 					price_text = price_elem.get_text(strip=True)
-					product_uprice = int(''.join(filter(str.isdigit, price_text)))
-					logger.debug(f"Unit price: {product_uprice}")
+					logger.debug(f"Raw price text: {price_text}") 
+     
+					# regex 
+					price_match = re.search(r'\d[\d.]*', price_text)
+					if price_match:
+						product_uprice = int(price_match.group().replace('.', ''))
+						logger.debug(f"Unit price: {product_uprice}")
+				except Exception as e:
+					logger.error(f"Error parsing price: {str(e)}")
  
 				except Exception as e: 
 					logger.error(f"Error parsing price: str{e}")

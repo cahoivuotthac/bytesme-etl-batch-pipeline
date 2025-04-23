@@ -25,30 +25,30 @@ websites:
   #     menu_type: "tabs"
   #     subcategory_selector: ".menu-tab"
 
-  # breadtalk:
-  #   path: 
-  #     website_path: https://breadtalkvietnam.com/
-  #     save_path: data/urls/
-  #   <<: *defaults
-  #   scraping: 
-  #     tag_name: li
-  #     menu_selector: menu-item  
-  #     filter-keyword: product-category
+  breadtalk:
+    path: 
+      website_path: https://breadtalkvietnam.com/
+      save_path: data/urls/
+    <<: *defaults
+    scraping: 
+      tag_name: li
+      menu_selector: menu-item  
+      filter-keyword: product-category
 
-  #     loading_type: pagination 
-  #     pagination: 
-  #       next_selector: ".next"
+      loading_type: pagination 
+      pagination: 
+        next_selector: ".next"
 
-  #     product_tag: a
-  #     product_selector: .d-block
+      product_tag: a
+      product_selector: .d-block
 
-  #     product_detail_selectors:
-  #       name: .entry-title 
-  #       code: None 
-  #       description: None 
-  #       unit_price: p.price span.woocommerce-Price-amount bdi 
-  #       image_selector: .swiper
-  #       original_category: .posted_in
+      product_detail_selectors:
+        name: .entry-title 
+        code: None 
+        description: None 
+        unit_price: p.price span.woocommerce-Price-amount bdi 
+        image_selector: .swiper
+        original_category: .posted_in
         
   panacota: 
     path: 
@@ -61,7 +61,7 @@ websites:
       filter-keyword: collections
 
       loading_type: progressive
-      button_selector: ".loadmore-collection button"
+      button_selector: .loadmore-collection button
       
       product_tag: div
       product_selector: .product-block
@@ -89,6 +89,6 @@ websites:
         name: .product_title 
         code: None 
         description: .woocommerce-product-details__short-description
-        unit_price: .p.price span.woocommerce-Price-amount bdi 
+        unit_price: .price 
         image_selector: .slick-list
         original_category: .flex-control-thumbs 
