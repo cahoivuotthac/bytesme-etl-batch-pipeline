@@ -1,12 +1,17 @@
 from dataclasses import dataclass, field
 import re
+import time
 from typing import Dict, List
 from urllib.parse import urljoin
 from urllib.request import Request, urlopen
-
 from bs4 import BeautifulSoup
 import requests
 from utils.logging_config import setup_logging, load_config
+
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 logger = setup_logging()
 web_config = load_config("webs_config.yml")
@@ -55,9 +60,8 @@ class ProductExtractor:
 		current_page = category_url # first page 
 
 		loading_type = self.scraping_config.get('loading_type', 'single-page')
-		
 		if loading_type == "pagination":
-			all_products = self._crawl_pagination(current_page, self.website_config)
+			all_products = self._crawl_pagination(current_page)
 		elif loading_type == "single-page":
 			pass
 		elif loading_type == "progressive":
@@ -78,9 +82,12 @@ class ProductExtractor:
 			try:
 				logger.info(f"Crawling page {page_count} in {url}")
 				req = Request(
-        			url, 
-           			headers={"User-Agent": web_config["http"]["user_agent"]}
-              	)
+					url, 
+					headers={
+						"User-Agent": web_config["http"]["user_agent"],
+						"Connection": "keep-alive"
+					}
+				)
      
 				html = urlopen(req)
 				bs = BeautifulSoup(html, "html.parser")
@@ -105,8 +112,7 @@ class ProductExtractor:
 						product_url = urljoin(website_path, product_url)
 
 					# get detailed product info 
-					# logger.info("Checkpoint!")
-					product = self._extract_product_details(product_url)
+					product = self._extract_dynamic_product_details(product_url)
 					if product: 
 						products.append(product)
 
@@ -122,52 +128,57 @@ class ProductExtractor:
     
 		return products
 
-	def crawl_loadmore(self, url: str) -> List[ProductInfo]:
-		pass 
+	def crawl_progessive(self, url: str) -> List[ProductInfo]:
+		pass
 
-	def _extract_product_details(self, product_url: str) -> ProductInfo:
+	def _extract_dynamic_product_details(self, product_url: str) -> ProductInfo:
 		try:
 			logger.info(f"Extracting details from: {product_url}")
 
-			req = Request(
-				product_url, 
-				headers={"User-Agent": web_config["http"]["user_agent"]}
-			)
-			html = urlopen(req)
-			bs = BeautifulSoup(html, "html.parser")
-
-			detail_selectors = self.scraping_config["product_detail_selectors"]
-			name_element = bs.select_one(detail_selectors["name"])
-			product_name = name_element.text.strip() if name_element else ""
+			headers = {
+				'User-Agent': web_config["http"]["user_agent"]
+			}
+			html = requests.get(product_url, headers=headers)
+			bs = BeautifulSoup(html.text, "html.parser")
+			detail_selectors = self.scraping_config.get("product_detail_selectors", "")
    
-			description_element = bs.select_one(detail_selectors["description"])
-			product_description = description_element.text.strip() if description_element else ""
-			
-			# price_element = bs.select_one(detail_selectors.get("unit_price", "")).text.strip()
-			# match = re.search(r"([\d.,]+)\s*([a-zA-ZđĐ]+)", price_element)
-			# if match:
-			# 	product_unit_price = match.group(1)
-			# 	product_currency = match.group(2)
-			# else:
-			# 	product_unit_price = 0 
-			# 	product_currency = ""
+			name_elem = bs.select_one(detail_selectors.get("name", ""))
+			if name_elem:
+				product_name = name_elem.text.strip() if name_elem else ""
+			if detail_selectors["description"] != "None":
+				description_elem = bs.select_one(detail_selectors.get("description", ""))
+				product_description = description_elem.text.strip()
+			else: 
+				product_description = ""
 
-			product_uprice = bs.select_one(detail_selectors.get("unit_price", "")).text.strip()
-			product_currency = bs.select_one(detail_selectors.get("currency", "")).text.strip() 
-   
-			image_element = bs.select_one(detail_selectors.get("image_selector", ""))
+			price_elem = bs.select_one(detail_selectors.get("unit_price", ""))
+			logger.debug(f"Raw price element: {price_elem}")
+			if price_elem:
+				try:
+					price_text = price_elem.get_text(strip=True)
+					product_uprice = int(''.join(filter(str.isdigit, price_text)))
+					logger.debug(f"Unit price: {product_uprice}")
+ 
+					currency_selector = price_elem.find('span')
+					product_currency = currency_selector.get_text(strip=True) if currency_selector else "₫"
+					logger.debug(f"Currency: {product_currency}")
+     
+				except Exception as e: 
+					logger.error(f"Error parsing price: str{e}")
+     
+			image_elem = bs.select_one(detail_selectors.get("image_selector", ""))
 			images = []
-			if image_element:
-				imgs_container = image_element.select('.swiper-slide')
+			if image_elem:
+				imgs_container = image_elem.select('.swiper-slide')
 				for img in imgs_container:
 					src = img.find('img').get('src')
 					if src:
 						images.append(src)
       
 			categories = []
-			categories_element = bs.select_one(detail_selectors.get("original_category", ""))
-			if categories_element:
-				tags = categories_element.find_all("a", rel="tag")
+			categories_elem = bs.select_one(detail_selectors.get("original_category", ""))
+			if categories_elem:
+				tags = categories_elem.find_all("a", rel="tag")
 				for tag in tags:
 					tag_name = tag.get_text(strip=True)
 					if tag:
@@ -180,17 +191,14 @@ class ProductExtractor:
 				website_name=self.website_name,
 				product_code="",
 				product_description=product_description,
-				product_unit_price=product_uprice,
+				product_unit_price=price_elem,
 				product_currency=product_currency,
 				product_image=images
 			)
 
 			return product 
+
 		except Exception as e:
 			logger.error(f"Error extracting product details from {product_url}")
 			logger.error(str(e))
 			return None 
-		
-
-	
-		
