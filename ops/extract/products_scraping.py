@@ -10,11 +10,16 @@ from utils.logging_config import setup_logging, load_config
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service 
+from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException
+from webdriver_manager.chrome import ChromeDriverManager
+
+import time 
 
 logger = setup_logging()
 web_config = load_config("webs_config.yml")
+SCROLL_PAUSE_TIME = 2
 
 @dataclass 
 class ProductInfo:
@@ -27,6 +32,7 @@ class ProductInfo:
  
 	product_image: List[str] = field(default_factory=list)
 	product_image_type: int = 1 
+	product_image_name: str = ""
  
 	product_code: str = "" # sku 
 	product_description: str = ""
@@ -37,8 +43,6 @@ class ProductInfo:
 	product_stock_quantity: int = 50
 	product_total_ratings: int = 0
 	product_overall_stars: float = 0.0
-	
-	product_image_name: str = ""
 
 class ProductExtractor: 
 	""" 
@@ -61,77 +65,108 @@ class ProductExtractor:
 
 		loading_type = self.scraping_config.get('loading_type', 'single-page')
 		if loading_type == "pagination":
-			all_products = self._crawl_pagination(current_page)
+			all_products = self._crawl_pagination(current_page, isSingle=False)
 		elif loading_type == "single-page":
-			pass
+			all_products = self._crawl_pagination(current_page, isSingle=True)	
 		elif loading_type == "progressive":
-			pass
+			all_products = self._crawl_progessive(current_page)
 		
 		logger.info(f"Products count: {len(all_products) if all_products else 0}")
 		return all_products
-		
-	def _crawl_pagination(self, url: str) -> List[ProductInfo]:
+	
+	def _crawl_pagination(self, url: str, isSingle: bool) -> List[ProductInfo]:
 		products = []
 		next_selector = self.scraping_config["pagination"]["next_selector"]
-		page_count = 1
- 
+		
 		logger.info("Start pagination crawling ...")
 		logger.debug(f"Next selector: {next_selector}")
- 
-		while url:
+		
+		while url: 
 			try:
-				logger.info(f"Crawling page {page_count} in {url}")
-				req = Request(
-					url, 
-					headers={
-						"User-Agent": web_config["http"]["user_agent"],
-						"Connection": "keep-alive"
-					}
-				)
-     
-				html = urlopen(req)
-				bs = BeautifulSoup(html, "html.parser")
-				
-				product_tag = self.scraping_config["product_tag"]
-				product_selector = self.scraping_config["product_selector"]
-				product_cards = bs.find_all(
-	       			product_tag, 
-	          		class_=re.compile(product_selector.replace(".", ""))
-	            )
-
-				for card in product_cards:
-					logger.info("Checkpoint!")
-					
-					product_url = card.get('href')
-					logger.debug(f"Product url: {product_url}")
-     
-					# make url absolute if it's relative 
-					if not product_url.startswith('https://'):
-						website_path = self.website_config["path"]["website_path"]
-						website_path = website_path.rstrip('/')
-						product_url = urljoin(website_path, product_url)
-
-					# get detailed product info 
-					product = self._extract_dynamic_product_details(product_url)
-					if product: 
-						products.append(product)
-
-			except Exception as e:
-				logger.error(f"Error occured when extracting product details")
-				return None
-
-			else:
-				# find next page link 
-				next_page = bs.select_one(next_selector)
-				url = next_page.get('href') if next_page else None 
-				page_count += 1
+				headers = {
+					'User-Agent': web_config["http"]["user_agent"],
+					'Connection': 'keep-alive'
+				}
+				html = requests.get(url, headers=headers)
+				bs = BeautifulSoup(html.content, "html5lib")
     
+				products_info = self._crawl_each_page(bs)
+				products.extend(products_info)
+
+				if isSingle == False:
+					next_page = bs.select_one(next_selector)
+					url = next_page.get('href') if next_page else None 
+				else:
+					return products 
+ 
+			except Exception as e:
+				logger.error(f"Error occured when extracting products")
+				
 		return products
 
-	def crawl_progessive(self, url: str) -> List[ProductInfo]:
-		pass
+	def _crawl_progessive(self, url: str) -> List[ProductInfo]:
+		options = Options()
+		options.add_argument('--headless') # run without opening a browser 
+		driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
-	def _extract_dynamic_product_details(self, product_url: str) -> ProductInfo:
+		try:
+			logger.info(f"Starting progressive scroll extraction from: {url}")
+			driver.get(url)
+			
+			while True:
+				try: 
+					load_more_button = driver.find_element(By.CLASS_NAME, self.scraping_config["progressive_loading"]["button_selector"])
+					load_more_button.click()
+					time.sleep(SCROLL_PAUSE_TIME)
+     
+				except NoSuchElementException:
+					logger.info("No more loadmore button founded")
+					break 
+ 
+				except ElementClickInterceptedException:
+					logger.info("Button is not clickable right now ...")
+					time.sleep(SCROLL_PAUSE_TIME)
+
+			html = driver.page_source
+			bs = BeautifulSoup(html, "html5lib")
+			products_info = self._crawl_each_page(bs)
+			return products_info
+
+		except Exception as e:
+			logger.error(f"Error during progressive scrolling: {str(e)}")
+			return []
+
+		finally:
+			driver.quit()
+			
+	def _crawl_each_page(self, bs: BeautifulSoup) -> List[ProductInfo]:
+		products= []
+
+		product_tag = self.scraping_config["product_tag"]
+		product_selector = self.scraping_config["product_selector"]
+		product_cards = bs.find_all(
+	   		product_tag, 
+	      	class_=re.compile(product_selector.replace(".", ""))
+	    )
+
+		for card in product_cards:
+			product_url = card.get('href')
+			logger.debug(f"Product url: {product_url}")
+
+			# make url absolute if it's relative 
+			if not product_url.startswith('https://'):
+				website_path = self.website_config["path"]["website_path"]
+				website_path = website_path.rstrip('/')
+				product_url = urljoin(website_path, product_url)
+
+			# get detailed product info 
+			product = self._extract_product_details(product_url)
+			if product: 
+				products.append(product)
+
+		return products 
+
+	def _extract_product_details(self, product_url: str) -> ProductInfo:
 		try:
 			logger.info(f"Extracting details from: {product_url}")
 
@@ -191,7 +226,7 @@ class ProductExtractor:
 				website_name=self.website_name,
 				product_code="",
 				product_description=product_description,
-				product_unit_price=price_elem,
+				product_unit_price=product_uprice,
 				product_currency=product_currency,
 				product_image=images
 			)

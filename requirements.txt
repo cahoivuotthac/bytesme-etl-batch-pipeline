@@ -3,3 +3,4 @@ beautifulsoup4
 sentence-transformers
 numpy
 selenium
+webdriver-manager-4.0.2
