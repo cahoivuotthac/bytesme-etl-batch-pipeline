@@ -2,18 +2,18 @@ from dataclasses import dataclass, field
 import re
 import time
 from typing import Dict, List
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 from urllib.request import Request, urlopen
 from bs4 import BeautifulSoup
 import requests
 from utils.logging_config import setup_logging, load_config
 
 from selenium import webdriver
-from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service 
-from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException
 
 import time 
 
@@ -37,7 +37,7 @@ class ProductInfo:
 	product_code: str = "" # sku 
 	product_description: str = ""
 	product_unit_price: int = 0
-	product_currency: str="VND"
+	product_currency: str="₫"
 	product_discount_percentage: float = 0.0
 	product_total_orders: int = 10
 	product_stock_quantity: int = 50
@@ -100,16 +100,38 @@ class ProductExtractor:
 					return products 
  
 			except Exception as e:
-				logger.error(f"Error occured when extracting products")
+				logger.error(f"Error occured when extracting products: str({e})")
 				
 		return products
 
 	def _crawl_progessive(self, url: str) -> List[ProductInfo]:
-		options = Options()
-		options.add_argument('--headless') # run without opening a browser 
-		driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
+		options = Options()
+		options.add_argument('--headless')
+		options.add_argument('--no-sandbox')
+		options.add_argument('--disable-dev-shm-usage')
+		options.add_argument('--disable-blink-features=AutomationControlled')
+		options.add_argument(f'--user-agent={web_config["http"]["user_agent"]}')
+		options.add_experimental_option("excludeSwitches", ["enable-automation"])
+		options.add_experimental_option('useAutomationExtension', False)
+		
 		try:
+			driver = webdriver.Chrome(
+		        service=Service(ChromeDriverManager().install()),
+		        options=options
+		    )
+   
+			driver.execute_script("""
+	            // Add headers to XMLHttpRequest
+	            (function(open) {
+	                XMLHttpRequest.prototype.open = function() {
+	                    open.apply(this, arguments);
+	                    this.setRequestHeader('User-Agent', arguments[1].indexOf('localhost') > -1 ? '' : 'Mozilla/5.0');
+	                    this.setRequestHeader('Accept', '*/*');
+	                };
+	            })(XMLHttpRequest.prototype.open);
+	        """)
+   
 			logger.info(f"Starting progressive scroll extraction from: {url}")
 			driver.get(url)
 			
@@ -118,11 +140,11 @@ class ProductExtractor:
 					load_more_button = driver.find_element(By.CLASS_NAME, self.scraping_config["progressive_loading"]["button_selector"])
 					load_more_button.click()
 					time.sleep(SCROLL_PAUSE_TIME)
-     
+		 
 				except NoSuchElementException:
 					logger.info("No more loadmore button founded")
 					break 
- 
+	 
 				except ElementClickInterceptedException:
 					logger.info("Button is not clickable right now ...")
 					time.sleep(SCROLL_PAUSE_TIME)
@@ -130,15 +152,17 @@ class ProductExtractor:
 			html = driver.page_source
 			bs = BeautifulSoup(html, "html5lib")
 			products_info = self._crawl_each_page(bs)
+	   
+			driver.quit()
+	   
 			return products_info
 
 		except Exception as e:
-			logger.error(f"Error during progressive scrolling: {str(e)}")
-			return []
+				logger.error(f"Error during progressive scrolling: {str(e)}")
+				if 'driver' in locals():
+					driver.quit()
+				return []
 
-		finally:
-			driver.quit()
-			
 	def _crawl_each_page(self, bs: BeautifulSoup) -> List[ProductInfo]:
 		products= []
 
@@ -174,9 +198,10 @@ class ProductExtractor:
 				'User-Agent': web_config["http"]["user_agent"]
 			}
 			html = requests.get(product_url, headers=headers)
-			bs = BeautifulSoup(html.text, "html.parser")
+			bs = BeautifulSoup(html.content, "html5lib")
 			detail_selectors = self.scraping_config.get("product_detail_selectors", "")
-   
+
+			# name
 			name_elem = bs.select_one(detail_selectors.get("name", ""))
 			if name_elem:
 				product_name = name_elem.text.strip() if name_elem else ""
@@ -186,6 +211,7 @@ class ProductExtractor:
 			else: 
 				product_description = ""
 
+			# price, currency
 			price_elem = bs.select_one(detail_selectors.get("unit_price", ""))
 			logger.debug(f"Raw price element: {price_elem}")
 			if price_elem:
@@ -194,26 +220,27 @@ class ProductExtractor:
 					product_uprice = int(''.join(filter(str.isdigit, price_text)))
 					logger.debug(f"Unit price: {product_uprice}")
  
-					currency_selector = price_elem.find('span')
-					product_currency = currency_selector.get_text(strip=True) if currency_selector else "₫"
-					logger.debug(f"Currency: {product_currency}")
-     
 				except Exception as e: 
 					logger.error(f"Error parsing price: str{e}")
-     
+
+			# images
 			image_elem = bs.select_one(detail_selectors.get("image_selector", ""))
 			images = []
+			product_names = []
 			if image_elem:
-				imgs_container = image_elem.select('.swiper-slide')
+				imgs_container = image_elem.select(detail_selectors["image_selector"])
 				for img in imgs_container:
 					src = img.find('img').get('src')
+					name = img.find('img').get('alt')
 					if src:
 						images.append(src)
-      
+						product_names.append(name)
+				
+			# categories
 			categories = []
 			categories_elem = bs.select_one(detail_selectors.get("original_category", ""))
 			if categories_elem:
-				tags = categories_elem.find_all("a", rel="tag")
+				tags = categories_elem.find_all("a")
 				for tag in tags:
 					tag_name = tag.get_text(strip=True)
 					if tag:
@@ -227,7 +254,6 @@ class ProductExtractor:
 				product_code="",
 				product_description=product_description,
 				product_unit_price=product_uprice,
-				product_currency=product_currency,
 				product_image=images
 			)
 

@@ -1,6 +1,7 @@
 requests 
 beautifulsoup4
-sentence-transformers
 numpy
 selenium
-webdriver-manager-4.0.2
+html5lib-1.1
+webdriver-manager
+pyyaml 
