@@ -25,70 +25,73 @@ websites:
   #     menu_type: "tabs"
   #     subcategory_selector: ".menu-tab"
 
-  breadtalk:
-    path: 
-      website_path: https://breadtalkvietnam.com/
-      save_path: data/urls/
-    <<: *defaults
-    scraping: 
-      tag_name: li
-      menu_selector: menu-item  
-      filter-keyword: product-category
+  # breadtalk:
+  #   path: 
+  #     website_path: https://breadtalkvietnam.com/
+  #     save_path: data/urls/
+  #   <<: *defaults
+  #   scraping: 
+  #     tag_name: li
+  #     menu_selector: menu-item  
+  #     filter-keyword: product-category
 
-      loading_type: pagination 
-      pagination: 
-        next_selector: ".next"
+  #     loading_type: pagination 
+  #     pagination: 
+  #       next_selector: ".next"
 
-      product_tag: a
-      product_selector: .d-block
+  #     product_tag: a
+  #     product_selector: .d-block
 
-      product_detail_selectors:
-        name: .entry-title 
-        code: None 
-        description: None 
-        unit_price: p.price span.woocommerce-Price-amount bdi 
-        image_selector: .swiper
-        original_category: .posted_in
+  #     product_detail_selectors:
+  #       name: .entry-title 
+  #       code: None 
+  #       description: None 
+  #       unit_price: p.price span.woocommerce-Price-amount bdi 
+  #       image_selector: .swiper
+  #       detail_image: .swiper-slide 
+  #       original_category: .posted_in
         
-  panacota: 
-    path: 
-      website_path: https://www.panacota.vn/
-      save_path: data/urls/
-    <<: *defaults
-    scraping: 
-      tag_name: li
-      menu_selector: item-lv1
-      filter-keyword: collections
+  # panacota: 
+  #   path: 
+  #     website_path: https://www.panacota.vn/
+  #     save_path: data/urls/
+  #   <<: *defaults
+  #   scraping: 
+  #     tag_name: li
+  #     menu_selector: item-lv1
+  #     filter-keyword: collections
 
-      loading_type: progressive
-      button_selector: .loadmore-collection button
+  #     loading_type: progressive
+  #     button_selector: .loadmore-collection button
       
-      product_tag: div
-      product_selector: .product-block
-      product_detail_selectors:
-        name: .head-product-title
-        code: .sku-number 
-        description: .more-description
-        unit_price: .price-now
-        image_selector: .slick-list
-        original_category: .pro-type
+  #     product_tag: div
+  #     product_selector: .product-block
+  #     product_detail_selectors:
+  #       name: .head-product-title
+  #       code: .sku-number 
+  #       description: .more-description
+  #       unit_price: .price-now
+  #       image_selector: .product-thumb
+  #       detail_image: .product__thumbnail 
+  #       original_category: .pro-type
 
-  cailonuong: 
-    path: 
-      website_path: https://cailonuong.com/
-      save_path: data/urls/
-    <<: *defaults
-    scraping: 
-      tag_name: ul
-      menu_selector: sub-menu
-      filter-keyword: danh-muc-san-pham
+  # cailonuong: 
+  #   path: 
+  #     website_path: https://cailonuong.com/
+  #     save_path: data/urls/
+  #   <<: *defaults
+  #   scraping: 
+  #     tag_name: ul
+  #     menu_selector: sub-menu
+  #     filter-keyword: danh-muc-san-pham
       
-      product_tag: ul
-      product_selector: .products 
-      product_detail_selectors: 
-        name: .product_title 
-        code: None 
-        description: .woocommerce-product-details__short-description
-        unit_price: .price 
-        image_selector: .slick-list
-        original_category: .flex-control-thumbs 
+  #     product_tag: ul
+  #     product_selector: .products 
+  #     product_detail_selectors: 
+  #       name: .product_title 
+  #       code: None 
+  #       description: .woocommerce-product-details__short-description
+  #       unit_price: .price 
+  #       image_selector: .woocommerce-product-gallery__wrapper
+  #       detail_image: .woocommerce-product-gallery__image 
+  #       original_category: .posted_in

@@ -2,6 +2,7 @@ requests
 beautifulsoup4
 numpy
 selenium
-html5lib-1.1
+html5lib
 webdriver-manager
 pyyaml 
+pandas 

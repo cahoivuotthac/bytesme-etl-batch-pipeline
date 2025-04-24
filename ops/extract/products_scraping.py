@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 import re
-import tempfile
 import time
 from typing import Dict, List
 from urllib.parse import urljoin
@@ -19,6 +18,11 @@ import time
 
 logger = setup_logging()
 web_config = load_config("webs_config.yml")
+
+import logging
+logging.getLogger('selenium').setLevel(logging.WARNING)
+logging.getLogger('urllib3').setLevel(logging.WARNING)
+
 SCROLL_PAUSE_TIME = 2
 
 @dataclass 
@@ -69,6 +73,8 @@ class ProductExtractor:
 			all_products = self._crawl_progessive(current_page)
 		
 		logger.info(f"Products count: {len(all_products) if all_products else 0}")
+		time.sleep(5)
+  
 		return all_products
 	
 	def _crawl_pagination(self, url: str, isSingle: bool) -> List[ProductInfo]:
@@ -105,7 +111,7 @@ class ProductExtractor:
 	def _crawl_progessive(self, url: str) -> List[ProductInfo]:
 		options = Options()
   
-		# options.add_argument('--headless')
+		options.add_argument('--headless')
 		options.add_argument('--no-sandbox')
 		options.add_argument('--disable-dev-shm-usage')
 		options.add_argument('--disable-blink-features=AutomationControlled')
@@ -250,11 +256,12 @@ class ProductExtractor:
 				try:
 					price_text = price_elem.get_text(strip=True)
 					logger.debug(f"Raw price text: {price_text}") 
-     
-					# regex 
-					price_match = re.search(r'\d[\d.]*', price_text)
-					if price_match:
-						product_uprice = int(price_match.group().replace('.', ''))
+
+					# remove currency symbols and commas 
+					cleaned_price_text = re.sub(r'[^\d]', '', price_text)
+					
+					if cleaned_price_text.isdigit():
+						product_uprice = int(cleaned_price_text)
 						logger.debug(f"Unit price: {product_uprice}")
 				except Exception as e:
 					logger.error(f"Error parsing price: {str(e)}")
@@ -263,17 +270,30 @@ class ProductExtractor:
 					logger.error(f"Error parsing price: str{e}")
 
 			# images
-			image_elem = bs.select_one(detail_selectors.get("image_selector", ""))
 			images = []
-			product_names = []
-			if image_elem:
-				imgs_container = image_elem.select(detail_selectors["image_selector"])
-				for img in imgs_container:
-					src = img.find('img').get('src')
-					name = img.find('img').get('alt')
-					if src:
+			image_names = []
+			imgs_con = bs.select_one(detail_selectors.get("image_selector", ""))
+			logger.debug(f"Image HTML conten: {imgs_con}")
+   
+			if imgs_con:
+				if detail_selectors["detail_image"]:
+					imgs_con = imgs_con.select(detail_selectors["detail_image"])
+				
+				for img_con in imgs_con:
+					img = img_con.find('img')
+					
+					src = img.get('src')
+					name = img.get('alt') if img.get('alt') else ""
+  
+					if not src.startswith("https://"):
+						src = 'https://' + src
+	  
+					logger.debug(f"Image source: {src}")
+					logger.debug(f"Image name: {name}")	
+	 
+					if src and name:
 						images.append(src)
-						product_names.append(name)
+						image_names.append(name)
 				
 			# categories
 			categories = []
@@ -284,13 +304,20 @@ class ProductExtractor:
 					tag_name = tag.get_text(strip=True)
 					if tag:
 						categories.append(tag_name)
-							
+			
+			logger.debug(f"Categories: {categories}")
+
+			# sku 
+			code_elem = bs.select_one(detail_selectors["code"]) if detail_selectors["code"] else ""
+			product_code = code_elem.get_text(strip=True) if code_elem else ""
+			logger.debug(f"SKU: {product_code}")
+   
 			product = ProductInfo(
 				product_name=product_name,
 				product_url=product_url,
 				original_category=categories,
 				website_name=self.website_name,
-				product_code="",
+				product_code=product_code,
 				product_description=product_description,
 				product_unit_price=product_uprice,
 				product_image=images
