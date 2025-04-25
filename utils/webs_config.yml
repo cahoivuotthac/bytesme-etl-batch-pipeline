@@ -11,19 +11,32 @@ http:
   user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0"
 
 websites:
-  # tljus:
-  #   path:
-  #     website_path: https://tljus.com/
-  #     save_path: data/urls/
-  #   <<: *defaults
-  #   scraping: 
-  #     tag_name: nav
-  #     menu_selector: dropdown-list-8 
-  #     filter-keyword: None
+  tljus:
+    path:
+      website_path: https://tljus.com/
+      save_path: data/urls/
+    <<: *defaults
+    scraping: 
+      tag_name: nav
+      menu_selector: dropdown-list-8 
+      filter-keyword: None
 
-  #     # tab-based navigation 
-  #     menu_type: "tabs"
-  #     subcategory_selector: ".menu-tab"
+      # tab-based navigation 
+      loading_type: tab-based 
+      subcategory_selector: ".menu-tab"
+
+      product_tag: div
+      product_selector: .menu-item-single
+
+      product_detail_selectors:
+        name: .paragraph.x1
+        code: None 
+        description: .menu-item-ingredients 
+        unit_price: None 
+        image_selector: .menu-item-main-image
+        detail_image: None
+        original_category: .cake-type 
+        category_tag: div
 
   # breadtalk:
   #   path: 
@@ -50,6 +63,7 @@ websites:
   #       image_selector: .swiper
   #       detail_image: .swiper-slide 
   #       original_category: .posted_in
+  #       category_tag: a
         
   # panacota: 
   #   path: 
@@ -74,6 +88,7 @@ websites:
   #       image_selector: .product-thumb
   #       detail_image: .product__thumbnail 
   #       original_category: .pro-type
+  #       category_tag: a
 
   # cailonuong: 
   #   path: 
@@ -95,3 +110,4 @@ websites:
   #       image_selector: .woocommerce-product-gallery__wrapper
   #       detail_image: .woocommerce-product-gallery__image 
   #       original_category: .posted_in
+  #       category_tag: a

@@ -5,26 +5,25 @@ from typing import Dict, List
 from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 import requests
-from utils.logging_config import setup_logging, load_config
+from utils.logging_config import setup_logging, load_config, setup_selenium
 
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 import time 
 
 logger = setup_logging()
 web_config = load_config("webs_config.yml")
+driver = setup_selenium(web_config["http"]["user_agent"])
 
 import logging
 logging.getLogger('selenium').setLevel(logging.WARNING)
 logging.getLogger('urllib3').setLevel(logging.WARNING)
 
-SCROLL_PAUSE_TIME = 2
-
+SCROLL_PAUSE_TIME = 3
+SLEEP_TIME = 5
 @dataclass 
 class ProductInfo:
 	
@@ -57,7 +56,8 @@ class ProductExtractor:
 		self.website_config = websites_config.get(website_name, {}) 
 		self.website_name = website_name
 		self.scraping_config = self.website_config.get('scraping', {})
-	
+		self.popups_handled = False 
+
 	def process_pages(self, category_url: str) -> List[ProductInfo]:
 		logger.info(f"Extracting products from: ({category_url})")
 	
@@ -71,12 +71,86 @@ class ProductExtractor:
 			all_products = self._crawl_pagination(current_page, isSingle=True)	
 		elif loading_type == "progressive":
 			all_products = self._crawl_progessive(current_page)
-		
+		elif loading_type == "tab-based":
+			all_products = self._crawl_tab_based(current_page)
+   
 		logger.info(f"Products count: {len(all_products) if all_products else 0}")
 		time.sleep(5)
   
 		return all_products
-	
+
+	def _hanlde_popups(self):
+		if not self.popups_handled:
+		# cookies popup 
+			try:
+				WebDriverWait(driver, 10).until(
+				    EC.presence_of_element_located((By.ID, "CybotCookiebotDialog"))
+				)
+				allow_all_button = driver.find_element(By.ID, "CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll")
+				allow_all_button.click()
+				WebDriverWait(driver, 5).until(
+				    EC.invisibility_of_element_located((By.ID, "CybotCookiebotDialog"))
+				)
+			except Exception as e:
+				logger.warning(f"Cookies popup not found or failed to close: {str(e)}")
+
+			try: 
+				close_button = WebDriverWait(driver, 10).until(
+					EC.element_to_be_clickable((By.CSS_SELECTOR, "div[class^='storefront-sdk-emotion'] button"))
+				)
+				close_button.click()
+			except Exception as e:
+				logger.warning(f"Close button not found or failed to click: {str(e)}")
+
+			self.popups_handled = True 
+
+	def _crawl_tab_based(self, url: str) -> List[ProductInfo]:
+		try:
+			driver.get(url)
+   
+			self._hanlde_popups()
+   
+			logger.debug("Waiting for tabs to load...")
+			tabs = WebDriverWait(driver, 15).until(
+			    EC.presence_of_all_elements_located((By.CSS_SELECTOR, self.scraping_config["subcategory_selector"]))
+			)
+			logger.debug(f"Found {len(tabs)} tabs")
+   
+			products_info = []
+			
+			if tabs: 
+				for tab in tabs: 
+					try: 
+						driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")	
+      
+						# Wait for the content to load
+						html = driver.page_source
+						bs = BeautifulSoup(html, 'html5lib')
+						products = self._crawl_each_page(bs)
+						products_info.extend(products)
+
+						tab.click()
+						logger.info("Tab menu is clicked")
+      
+					except ElementClickInterceptedException:
+						logger.warning("Element click intercepted. Retrying...")
+						time.sleep(1)
+						driver.execute_script("arguments[0].click();", tab)
+			else: 
+				# If no tabs are found, scrape the current page
+				logger.info("No tabs found. Scraping the current page.")
+				html = driver.page_source
+				bs = BeautifulSoup(html, 'html5lib')
+				products = self._crawl_each_page(bs)
+				products_info.extend(products)
+			
+			return products_info
+ 
+		except Exception as e:
+			logger.error(f"WebDriver error: {str(e)}")
+			return []
+		
+		
 	def _crawl_pagination(self, url: str, isSingle: bool) -> List[ProductInfo]:
 		products = []
 		if not isSingle:
@@ -109,38 +183,13 @@ class ProductExtractor:
 		return products
 
 	def _crawl_progessive(self, url: str) -> List[ProductInfo]:
-		options = Options()
-  
-		options.add_argument('--headless')
-		options.add_argument('--no-sandbox')
-		options.add_argument('--disable-dev-shm-usage')
-		options.add_argument('--disable-blink-features=AutomationControlled')
-		options.add_argument(f'--user-agent={web_config["http"]["user_agent"]}')
-		options.add_experimental_option("excludeSwitches", ["enable-automation"])
-		options.add_experimental_option('useAutomationExtension', False)
-  
 		try:
-			driver = webdriver.Chrome(
-				service=Service(ChromeDriverManager().install()),
-				options=options
-			)
-   
-			driver.execute_script("""
-				(function(open) {
-					XMLHttpRequest.prototype.open = function() {
-						open.apply(this, arguments);
-						this.setRequestHeader('User-Agent', arguments[1].indexOf('localhost') > -1 ? '' : 'Mozilla/5.0');
-						this.setRequestHeader('Accept', '*/*');
-					};
-				})(XMLHttpRequest.prototype.open);
-			""")
-   
 			logger.info(f"Starting progressive extraction from: {url}")
 			driver.get(url)
 			
 			# wait for the page to be fully loaded 
-			time.sleep(3)
-   
+			time.sleep(SLEEP_TIME)
+
 			products_info = []
 			max_attemps = 5
 			attempt_count = 0
@@ -149,7 +198,7 @@ class ProductExtractor:
 				try: 
 					# Try scrolling to make button visible
 					driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-					time.sleep(1)
+					time.sleep(SLEEP_TIME)
 	 
 					# button selector is a CSS selector including both a class and an element
 					load_more_button = driver.find_element(By.CSS_SELECTOR, self.scraping_config["button_selector"])
@@ -240,8 +289,8 @@ class ProductExtractor:
 			detail_selectors = self.scraping_config.get("product_detail_selectors", "")
 
 			# name
-			name_elem = bs.select_one(detail_selectors.get("name", ""))
-			if name_elem:
+			name_elem = bs.select_one(detail_selectors["name"])
+			if name_elem != "None":
 				product_name = name_elem.text.strip() if name_elem else ""
 			if detail_selectors["description"] != "None":
 				description_elem = bs.select_one(detail_selectors.get("description", ""))
@@ -250,25 +299,29 @@ class ProductExtractor:
 				product_description = ""
 
 			# price, currency
-			price_elem = bs.select_one(detail_selectors.get("unit_price", ""))
-			logger.debug(f"Raw price element HTML: {price_elem}")
-			if price_elem:
-				try:
-					price_text = price_elem.get_text(strip=True)
-					logger.debug(f"Raw price text: {price_text}") 
+			if detail_selectors["unit_price"] != "None":
+				price_elem = bs.select_one(detail_selectors["unit_price"])
+    
+				logger.debug(f"Raw price element HTML: {price_elem}")
+				if price_elem:
+					try:
+						price_text = price_elem.get_text(strip=True)
+						logger.debug(f"Raw price text: {price_text}") 
 
-					# remove currency symbols and commas 
-					cleaned_price_text = re.sub(r'[^\d]', '', price_text)
-					
-					if cleaned_price_text.isdigit():
-						product_uprice = int(cleaned_price_text)
-						logger.debug(f"Unit price: {product_uprice}")
-				except Exception as e:
-					logger.error(f"Error parsing price: {str(e)}")
- 
-				except Exception as e: 
-					logger.error(f"Error parsing price: str{e}")
-
+						# remove currency symbols and commas 
+						cleaned_price_text = re.sub(r'[^\d]', '', price_text)
+						
+						if cleaned_price_text.isdigit():
+							product_uprice = int(cleaned_price_text)
+							logger.debug(f"Unit price: {product_uprice}")
+					except Exception as e:
+						logger.error(f"Error parsing price: {str(e)}")
+	 
+					except Exception as e: 
+						logger.error(f"Error parsing price: str{e}")
+			else: 
+				product_uprice = 0
+    
 			# images
 			images = []
 			image_names = []
@@ -276,34 +329,51 @@ class ProductExtractor:
 			logger.debug(f"Image HTML conten: {imgs_con}")
    
 			if imgs_con:
-				if detail_selectors["detail_image"]:
-					imgs_con = imgs_con.select(detail_selectors["detail_image"])
+				if detail_selectors["detail_image"] != "None":
+					imgs = imgs_con.select(detail_selectors["detail_image"])
 				
-				for img_con in imgs_con:
-					img = img_con.find('img')
-					
-					src = img.get('src')
-					name = img.get('alt') if img.get('alt') else ""
-  
-					if not src.startswith("https://"):
-						src = 'https://' + src
+					for img in imgs:
+						logger.debug(f"{img.attrs}")
+						
+						img = img.find('img')
+						
+						src = img.get('src')
+						name = img.get('alt') if img.get('alt') else ""
 	  
-					logger.debug(f"Image source: {src}")
-					logger.debug(f"Image name: {name}")	
-	 
-					if src and name:
-						images.append(src)
-						image_names.append(name)
-				
+						if not src.startswith("https://"):
+							src = 'https://' + src
+		  
+						logger.debug(f"Image source: {src}")
+						logger.debug(f"Image name: {name}")	
+		 
+						if src and name:
+							images.append(src)
+							image_names.append(name)
+       
+				# specific for the tljus website
+				else:
+					if 'style' in imgs_con.attrs:
+						
+						style_attr = imgs_con.attrs['style']
+						match = re.search(r'url\(["\']?(.*?)["\']?\)', style_attr)
+						if match:
+							src = match.group(1)
+							if not src.startswith("https://"):
+								src = 'https://' + src
+							logger.debug(f"Extracted image source from style: {src}")
+							images.append(src)
+							image_names.append("")
+   
 			# categories
 			categories = []
-			categories_elem = bs.select_one(detail_selectors.get("original_category", ""))
-			if categories_elem:
-				tags = categories_elem.find_all("a")
-				for tag in tags:
-					tag_name = tag.get_text(strip=True)
-					if tag:
-						categories.append(tag_name)
+			if detail_selectors["original_category"] != "None":
+				categories_elem = bs.select_one(detail_selectors["original_category"])
+				if categories_elem:
+					tags = categories_elem.find_all(detail_selectors["category_tag"])
+					for tag in tags:
+						tag_name = tag.get_text(strip=True)
+						if tag:
+							categories.append(tag_name)
 			
 			logger.debug(f"Categories: {categories}")
 
