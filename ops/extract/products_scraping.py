@@ -302,7 +302,7 @@ class ProductExtractor:
 			
 			if product_url:
 				skip_patterns = self.scraping_config["skip_url_patterns"] 
-				if skip_patterns and skip_patterns in product_url:
+				if skip_patterns != "None" and skip_patterns in product_url:
 					continue  
  
 			logger.debug(f"Product url: {product_url}")
@@ -341,6 +341,7 @@ class ProductExtractor:
 			logger.debug(f"Product name: {name_elem}")
 			if name_elem != "None":
 				product_name = name_elem.text.strip() if name_elem else ""
+    
 			if detail_selectors["description"] != "None":
 				product_description = ""
 				description_selectors = detail_selectors["description"]

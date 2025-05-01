@@ -11,80 +11,84 @@ http:
   user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0"
 
 websites:
-  # tljus:
-  #   path:
-  #     website_path: https://tljus.com/
-  #   <<: *defaults
-  #   scraping: 
-  #     tag_name: nav
-  #     menu_selector: dropdown-list-8 
-  #     filter-keyword: None
+  tljus:
+    path:
+      website_path: https://tljus.com/
+    <<: *defaults
+    scraping: 
+      tag_name: nav
+      menu_selector: dropdown-list-8 
+      filter-keyword: None
 
-  #     # tab-based navigation 
-  #     loading_type: tab-based 
-  #     subcategory_selector: .menu-tab
+      loading_type: tab-based 
+      subcategory_selector: .menu-tab
+      skip_url_patterns: None 
 
-  #     product_tag: div
-  #     product_selector: .menu-item-single
-  #     product_detail_selectors:
-  #       name: .breadcrumb
-  #       code: None 
-  #       description: .menu-item-ingredients 
-  #       unit_price: None 
-  #       image_selector: .menu-item-main-image
-  #       detail_image: None
-  #       original_category: .cake-type 
-  #       category_tag: div
+      product_tag: div
+      product_selector: .menu-item-single
+      product_detail_selectors:
+        name: .breadcrumb
+        code: None 
+        description: 
+          - .menu-item-ingredients 
+        unit_price: None 
+        image_selector: .menu-item-main-image
+        detail_image: None
+        original_category: .cake-type 
+        category_tag: div
 
-  # breadtalk:
-  #   path: 
-  #     website_path: https://breadtalkvietnam.com/
-  #   <<: *defaults
-  #   scraping: 
-  #     tag_name: li
-  #     menu_selector: menu-item  
-  #     filter-keyword: product-category
+  breadtalk:
+    path: 
+      website_path: https://breadtalkvietnam.com/
+    <<: *defaults
+    scraping: 
+      tag_name: li
+      menu_selector: menu-item  
+      filter-keyword: product-category
 
-  #     loading_type: pagination 
-  #     pagination: 
-  #       next_selector: ".next"
+      loading_type: pagination 
+      pagination: 
+        next_selector: ".next"
 
-  #     product_tag: a
-  #     product_selector: .d-block
+      product_tag: a
+      product_selector: .d-block
+      skip_url_patterns: None 
 
-  #     product_detail_selectors:
-  #       name: .entry-title 
-  #       code: None 
-  #       description: None 
-  #       unit_price: p.price span.woocommerce-Price-amount bdi 
-  #       image_selector: .swiper-wrapper 
-  #       detail_image: .swiper-slide
-  #       original_category: .posted_in
-  #       category_tag: a
+      product_detail_selectors:
+        name: .entry-title 
+        code: None 
+        description: None 
+        unit_price: p.price span.woocommerce-Price-amount bdi 
+        image_selector: .swiper-wrapper 
+        detail_image: .swiper-slide
+        original_category: .posted_in
+        category_tag: a
         
-  # panacota: 
-  #   path: 
-  #     website_path: https://www.panacota.vn/
-  #   <<: *defaults
-  #   scraping: 
-  #     tag_name: li
-  #     menu_selector: item-lv1
-  #     filter-keyword: collections
+  panacota: 
+    path: 
+      website_path: https://www.panacota.vn/
+    <<: *defaults
+    scraping: 
+      tag_name: li
+      menu_selector: item-lv1
+      filter-keyword: collections
 
-  #     loading_type: progressive
-  #     button_selector: .loadmore-collection button
-      
-  #     product_tag: div
-  #     product_selector: .product-block
-  #     product_detail_selectors:
-  #       name: .head-product-title
-  #       code: .sku-number 
-  #       description: .more-description
-  #       unit_price: .price-now
-  #       image_selector: .product-thumb
-  #       detail_image: .product__thumbnail 
-  #       original_category: .pro-type
-  #       category_tag: a
+      loading_type: progressive
+      button_selector: .loadmore-collection button
+      skip_url_patterns: None 
+
+      product_tag: div
+      product_selector: .product-block
+      product_detail_selectors:
+        name: .head-product-title
+        code: .sku-number 
+        description: 
+          - .more-description
+        unit_price: .price-now
+        image_selector: .product-thumb
+        detail_image: .product__thumbnail 
+        original_category: .pro-type
+        category_tag: a
 
   cailonuong: 
     path: 
