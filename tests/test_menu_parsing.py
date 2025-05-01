@@ -7,7 +7,7 @@ from utils.logging_config import setup_logging, load_config
 
 results = {}
 logger = setup_logging()
-config = load_config("webs_cake_config.yml")
+config = load_config("webs_config.yml")
 
 def test_menu_parsing():
 	
@@ -54,7 +54,7 @@ def test_menu_parsing():
 				'success': False,
 				'error': str(e)
 			}
-   
+	
 	with open('data/test/category_urls.json', "w") as file:
 		json.dump(dict_, file, indent=4)
 
@@ -71,6 +71,7 @@ if __name__ == "__main__":
 			print("Sample links: ")
 			for url in rs['sample_urls']:
 				print(f" - {url}")
+			
 		else: 
 			print(f"Failed: {rs['error']}")
    

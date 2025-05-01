@@ -2,13 +2,13 @@ from dataclasses import dataclass, field
 import re
 import time
 from typing import Dict, List
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup
 import requests
 from utils.logging_config import setup_logging, load_config, setup_selenium
 
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException
+from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException, TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
@@ -104,52 +104,88 @@ class ProductExtractor:
 
 			self.popups_handled = True 
 
+	def _add_products(self, products: List[ProductInfo], processed_urls: set) -> List[ProductInfo]:
+		products_info = []
+		
+		for product in products:
+			if product.product_url not in processed_urls: 
+				products_info.append(product)
+				processed_urls.add(product.product_url)	
+
+		return products_info
+
 	def _crawl_tab_based(self, url: str) -> List[ProductInfo]:
 		try:
 			driver.get(url)
-   
+			logger.info(f"Loading page: {url}")
+			time.sleep(3)
 			self._hanlde_popups()
-   
-			logger.debug("Waiting for tabs to load...")
-			tabs = WebDriverWait(driver, 15).until(
-			    EC.presence_of_all_elements_located((By.CSS_SELECTOR, self.scraping_config["subcategory_selector"]))
-			)
-			logger.debug(f"Found {len(tabs)} tabs")
-   
+
 			products_info = []
-			
-			if tabs: 
-				for tab in tabs: 
+			processed_url = set()
+   
+			logger.info("Waiting for tabs to be loaded ...")
+			try: 
+				tabs = WebDriverWait(driver, 15).until(
+				    EC.presence_of_all_elements_located((By.CSS_SELECTOR, self.scraping_config["subcategory_selector"]))
+				)
+				logger.debug(f"Found {len(tabs)} tabs")
+	   
+				# extract products from the initial page 
+				html = driver.page_source 
+				bs = BeautifulSoup(html, 'html5lib')
+				initial_products = self._crawl_each_page(bs)
+				if initial_products:
+					products_info.extend(self._add_products(initial_products, processed_url))
+    
+				for i in range(1, len(tabs)): 
 					try: 
-						driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")	
-      
-						# Wait for the content to load
+					
+						driver.execute_script("arguments[0].click();", tabs[i])
+						WebDriverWait(driver, 15).until(
+						    EC.presence_of_all_elements_located((By.CSS_SELECTOR, self.scraping_config["product_selector"]))
+						)
+
 						html = driver.page_source
 						bs = BeautifulSoup(html, 'html5lib')
 						products = self._crawl_each_page(bs)
-						products_info.extend(products)
+						if products:
+							products_info.extend(self._add_products(products, processed_url))
 
-						tab.click()
-						logger.info("Tab menu is clicked")
-      
 					except ElementClickInterceptedException:
 						logger.warning("Element click intercepted. Retrying...")
-						time.sleep(1)
-						driver.execute_script("arguments[0].click();", tab)
-			else: 
-				# If no tabs are found, scrape the current page
-				logger.info("No tabs found. Scraping the current page.")
+						time.sleep(5)
+
+						driver.execute_script("arguments[0].click();", tabs[i])
+						products = WebDriverWait(driver, 15).until(
+						    EC.presence_of_all_elements_located((By.CSS_SELECTOR, self.scraping_config["product_selector"]))
+						)
+						
+						if products: 
+							html = driver.page_source
+							bs = BeautifulSoup(html, 'html5lib')
+							products_info.extend(self._add_products(products, processed_url))
+						else: 
+							continue
+		      
+			except TimeoutException: 
+				logger.warning("No tabs are founded within the timeout period")
+    
 				html = driver.page_source
 				bs = BeautifulSoup(html, 'html5lib')
 				products = self._crawl_each_page(bs)
-				products_info.extend(products)
-			
+				if products:
+					products_info.extend(self._add_products(products, processed_url))
+    
 			return products_info
  
 		except Exception as e:
-			logger.error(f"WebDriver error: {str(e)}")
+			error_message = str(e) if str(e) else repr(e) # repr: developer-oriented representation
+			error_type = type(e).__name__ 
+			logger.error(f"WebDriver error: {error_type} - {error_message}")
+
+			logger.debug("Current URL: " + url)
 			return []
-		
 		
 	def _crawl_pagination(self, url: str, isSingle: bool) -> List[ProductInfo]:
 		products = []
@@ -246,7 +282,7 @@ class ProductExtractor:
     
 		return products_info
 
-	def _crawl_each_page(self, bs: BeautifulSoup) -> List[ProductInfo]:
+	def _crawl_each_page(self, bs: BeautifulSoup) -> List[ProductInfo]: 
 		products= []
 
 		product_tag = self.scraping_config["product_tag"]
@@ -256,6 +292,7 @@ class ProductExtractor:
 		  	class_=re.compile(product_selector.replace(".", ""))
 		)
 
+		skip_products = 0
 		for card in product_cards:
 			product_url = card.get('href')
 			if not product_url:
@@ -265,16 +302,21 @@ class ProductExtractor:
 			logger.debug(f"Product url: {product_url}")
 
 			# make url absolute if it's relative 
-			if not product_url.startswith('https://'):
+			if product_url and not product_url.startswith('https://'):
 				website_path = self.website_config["path"]["website_path"]
 				website_path = website_path.rstrip('/')
 				product_url = urljoin(website_path, product_url)
+			elif not product_url:
+				logger.warning("Found a product card with no url")
+				skip_products += 1
+				continue 
 
 			# get detailed product info 
 			product = self._extract_product_details(product_url)
 			if product: 
 				products.append(product)
 
+		logger.warning(f"Skip {skip_products} products")
 		return products 
 
 	def _extract_product_details(self, product_url: str) -> ProductInfo:
@@ -374,7 +416,12 @@ class ProductExtractor:
 						tag_name = tag.get_text(strip=True)
 						if tag:
 							categories.append(tag_name)
-			
+				if not categories: 
+					parsed_url = urlparse(product_url)
+					path_parts = parsed_url.path.strip('/').split('/')
+					categories.append(path_parts[-2])
+
+      
 			logger.debug(f"Categories: {categories}")
 
 			# sku 
