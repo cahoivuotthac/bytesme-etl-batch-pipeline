@@ -64,11 +64,11 @@ class ProductExtractor:
 		all_products = []
 		current_page = category_url # first page 
 
-		loading_type = self.scraping_config.get('loading_type', 'single-page')
+		loading_type = self.scraping_config['loading_type']
 		if loading_type == "pagination":
 			all_products = self._crawl_pagination(current_page, isSingle=False)
 		elif loading_type == "single-page":
-			all_products = self._crawl_pagination(current_page, isSingle=True)	
+			all_products = self._crawl_pagination(current_page, isSingle=True)	 
 		elif loading_type == "progressive":
 			all_products = self._crawl_progessive(current_page)
 		elif loading_type == "tab-based":
@@ -189,11 +189,11 @@ class ProductExtractor:
 		
 	def _crawl_pagination(self, url: str, isSingle: bool) -> List[ProductInfo]:
 		products = []
-		if not isSingle:
+		if not isSingle: 
 			next_selector = self.scraping_config["pagination"]["next_selector"]
 			logger.debug(f"Next selector: {next_selector}")
-   
-		logger.info("Start pagination crawling ...")
+
+			logger.info("Start pagination crawling ...")
 		
 		while url: 
 			try:
@@ -203,7 +203,6 @@ class ProductExtractor:
 				}
 				html = requests.get(url, headers=headers)
 				bs = BeautifulSoup(html.content, "html5lib")
-	
 				products_info = self._crawl_each_page(bs)
 				products.extend(products_info)
 
@@ -291,6 +290,7 @@ class ProductExtractor:
 	   		product_tag, 
 		  	class_=re.compile(product_selector.replace(".", ""))
 		)
+		logger.info(f"Found {len(product_cards)} product elements")
 
 		skip_products = 0
 		for card in product_cards:
@@ -299,6 +299,12 @@ class ProductExtractor:
 				anchor = card.find('a')
 				if anchor:
 					product_url = anchor.get('href')
+			
+			if product_url:
+				skip_patterns = self.scraping_config["skip_url_patterns"] 
+				if skip_patterns and skip_patterns in product_url:
+					continue  
+ 
 			logger.debug(f"Product url: {product_url}")
 
 			# make url absolute if it's relative 
@@ -332,11 +338,18 @@ class ProductExtractor:
 
 			# name
 			name_elem = bs.select_one(detail_selectors["name"])
+			logger.debug(f"Product name: {name_elem}")
 			if name_elem != "None":
 				product_name = name_elem.text.strip() if name_elem else ""
 			if detail_selectors["description"] != "None":
-				description_elem = bs.select_one(detail_selectors.get("description", ""))
-				product_description = description_elem.text.strip()
+				product_description = ""
+				description_selectors = detail_selectors["description"]
+				
+				for selector in description_selectors:
+					description_elem = bs.select_one(selector)
+					if description_elem:
+						product_description = description_elem.text.strip()
+						break 
 			else: 
 				product_description = ""
 
@@ -368,29 +381,42 @@ class ProductExtractor:
 			images = []
 			image_names = []
 			imgs_con = bs.select_one(detail_selectors.get("image_selector", ""))
-			logger.debug(f"Image HTML conten: {imgs_con}")
+			logger.debug(f"Image HTML content: {imgs_con}")
    
 			if imgs_con:
 				if detail_selectors["detail_image"] != "None":
 					imgs = imgs_con.select(detail_selectors["detail_image"])
-				
+					logger.debug(imgs)
 					for img in imgs:
 						logger.debug(f"{img.attrs}")
 						
 						img = img.find('img')
 						
 						src = img.get('src')
-						name = img.get('alt') if img.get('alt') else ""
+						if img.get('alt'):
+							name = img.get('alt')
+						elif img.get('title'):
+							name = img.get('title')
+						else:
+							name = ''
 	  
 						if not src.startswith("https://"):
-							src = 'https://' + src
+							src = 'https://' + src.lstrip('//')
 		  
 						logger.debug(f"Image source: {src}")
 						logger.debug(f"Image name: {name}")	
 		 
-						if src and name:
-							images.append(src)
-							image_names.append(name)
+						if src:
+							if isinstance(src, list):
+								images.extend(src)
+							else:
+								images.append(src)
+       
+						if name:
+							if isinstance(src, list):
+								image_names.extend(src)
+							else:
+								image_names.append(name)
        
 				# specific for the tljus website
 				else:
@@ -410,12 +436,15 @@ class ProductExtractor:
 			categories = []
 			if detail_selectors["original_category"] != "None":
 				categories_elem = bs.select_one(detail_selectors["original_category"])
+				logger.debug(f"Category list: {categories_elem}")
+    
 				if categories_elem:
 					tags = categories_elem.find_all(detail_selectors["category_tag"])
 					for tag in tags:
 						tag_name = tag.get_text(strip=True)
 						if tag:
 							categories.append(tag_name)
+       
 				if not categories: 
 					parsed_url = urlparse(product_url)
 					path_parts = parsed_url.path.strip('/').split('/')

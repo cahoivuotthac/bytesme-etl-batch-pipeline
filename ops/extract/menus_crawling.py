@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from utils.logging_config import setup_logging, load_config
 
 logger = setup_logging()
-config = load_config("webs_cake_config.yml")
+config = load_config("webs_config.yml")
 
 def is_parent_category(url_list, url):
 	parsed_url = urlparse(url)
@@ -20,7 +20,7 @@ def is_parent_category(url_list, url):
 	return False 
 
 def scrape_website(link, tag_name, menu_selector, filter_keyword):
-	all_list = []
+	all_urls = set() # prevent duplicated urls 
 	user_agent = config["http"]["user_agent"]
 	
 	try: 
@@ -39,16 +39,15 @@ def scrape_website(link, tag_name, menu_selector, filter_keyword):
    
 			for item in menu_items:
 				url = item['href']
-    
-				if (filter_keyword == "None" or filter_keyword in url) \
-    				and url not in all_list: 
-
+				
+				if (filter_keyword == "None" or filter_keyword in url):
 					# ensure absolute url 
 					if not url.startswith('https://'):
 						url = urljoin(link, url)
 
-					all_list.append(url)
+					all_urls.add(url) 
 		
+		all_list = list(all_urls)
 		filtered_list = [url for url in all_list if not is_parent_category(all_list, url)]
     
 		return filtered_list 
@@ -58,7 +57,7 @@ def scrape_website(link, tag_name, menu_selector, filter_keyword):
 		if e.code == 403: 
 			logger.warning("Access forbidden")
 	
-	return all_list 
+	return list(all_urls) 
 
 if __name__ == "__main__":
 	logger.info('Starting to crawl...')
