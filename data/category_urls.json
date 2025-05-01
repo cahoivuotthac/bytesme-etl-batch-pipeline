@@ -1,0 +1,44 @@
+{
+    "tljus": [
+        "https://tljus.com/menus/sandwiches",
+        "https://tljus.com/menus/cakes",
+        "https://tljus.com/menus/pastryandpie",
+        "https://tljus.com/menus/bread"
+    ],
+    "breadtalk": [
+        "https://breadtalkvietnam.com/product-category/pudding-vi/",
+        "https://breadtalkvietnam.com/product-category/dry-cakes-vi/",
+        "https://breadtalkvietnam.com/product-category/cookies-vi/",
+        "https://breadtalkvietnam.com/product-category/buns-vi/savory-vi/",
+        "https://breadtalkvietnam.com/product-category/sandwiches-vi/",
+        "https://breadtalkvietnam.com/product-category/cakes-vi/",
+        "https://breadtalkvietnam.com/product-category/cake-slices-vi/",
+        "https://breadtalkvietnam.com/product-category/toasts-vi/",
+        "https://breadtalkvietnam.com/product-category/buns-vi/sweet-vi/"
+    ],
+    "panacota": [
+        "https://www.panacota.vn/collections/menu-tet-2025",
+        "https://www.panacota.vn/collections/banh-mi",
+        "https://www.panacota.vn/collections/set-banh-tong-hop",
+        "https://www.panacota.vn/collections/cookie",
+        "https://www.panacota.vn/collections/kem-bo-co-ban",
+        "https://www.panacota.vn/collections/banh-lanh",
+        "https://www.panacota.vn/collections/set-qua-tang-trung-thu-2023",
+        "https://www.panacota.vn/collections/chocolate",
+        "https://www.panacota.vn/collections/menu-giang-sinh",
+        "https://www.panacota.vn/collections/banh-ngot",
+        "https://www.panacota.vn/collections/banh-trung-thu",
+        "https://www.panacota.vn/collections/bong-lan-trung-muoi",
+        "https://www.panacota.vn/collections/happy-women-day-set-menu"
+    ],
+    "cailonuong": [
+        "https://cailonuong.com/danh-muc-san-pham/banh-flan-gato/",
+        "https://cailonuong.com/danh-muc-san-pham/banh-entremet/",
+        "https://cailonuong.com/danh-muc-san-pham/sweet-box/",
+        "https://cailonuong.com/danh-muc-san-pham/sweetin-banh-hop-thiec-cao-cap/",
+        "https://cailonuong.com/danh-muc-san-pham/banh-kem-bap/",
+        "https://cailonuong.com/danh-muc-san-pham/banh-mousse/",
+        "https://cailonuong.com/danh-muc-san-pham/banh-nuong/",
+        "https://cailonuong.com/danh-muc-san-pham/banh-healthy/"
+    ]
+}

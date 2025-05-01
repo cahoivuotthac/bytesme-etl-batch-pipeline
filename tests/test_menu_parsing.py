@@ -31,8 +31,8 @@ def test_menu_parsing():
 				'sample_urls': menu_urls[:5] if menu_urls else []
 			}
    
-			save_path = site_config['path']['save_path']
-			os.makedirs(save_path, exist_ok=True)
+			# save_path = site_config['path']['save_path']
+			# os.makedirs(save_path, exist_ok=True)
    
 			# df = pd.DataFrame(data=menu_urls, columns=["URL"])
 			
