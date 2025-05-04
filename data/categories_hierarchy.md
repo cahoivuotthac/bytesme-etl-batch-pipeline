@@ -1,33 +1,17 @@
-```
-|── Pastries (Bánh nướng)
-|	└── Croissants 
-|	└── Pies
-|	└── Tart 
-|	└── Danish 
-|	└── Pain au 
-|
-|── Donuts 
-|
-|── Bread & Buns
-|	└── Sweet
-|	└── Savory	
-|
-|── Cookies & Biscuits 
-|
-|── Chilled & Cold
-|	└── Tiramisu 
-|	└── Panna cotta 
-|	└── Mousse
-|	└── Cheesecake
-|	└── Mochi
-|	└── Bingsu  
-|	└── Cream Puffs 
+- Foods 
+  - Cakes
+  - Breads & Buns 
+  - Pastries & Pies 
+  - Season & Specialist
+  - Cookies & Biscuits
+  - Chilled & Cold
+  - Sets
+  - Bingsu 
+  - Mochi
+  - Gelato & Ice cream
 
-|── Thức uống  
-|	└── Cà phê 
-|	└── Trà 
-|	└── Nước ép 
-|	└── Đá xay
-
-|── Kem
-```
+- Beverages 
+  - Cà phê
+  - Trà
+  - Nước ép
+  - Đá xay

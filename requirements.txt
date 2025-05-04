@@ -5,4 +5,5 @@ selenium
 html5lib
 webdriver-manager
 pyyaml 
-pandas 
+pandas
+rapidfuzz==3.13.0

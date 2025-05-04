@@ -1,5 +1,5 @@
 import json
-
+import os 
 import pandas as pd
 from ops.extract.products_scraping import ProductExtractor
 from utils.logging_config import load_config
@@ -11,7 +11,7 @@ config = load_config("webs_config.yml")
 web_config = config["websites"]
 web_names = web_config.keys()
 
-with open("data/test/category_urls.json") as f:
+with open("data/category_urls.json") as f:
     category_urls = json.load(f)
 
 all_products = []
@@ -34,5 +34,6 @@ for product in all_products:
     flat_products.append(product_dict)
         
 df = pd.DataFrame(data=flat_products)
+os.makedirs('data/test', exist_ok=True)
 df.to_csv('data/test/cake_products.csv', index=False, encoding='utf-8')
 logger.info(f"Saved {len(df)} products to CSV in tabular format") 

@@ -31,8 +31,9 @@ class ProductInfo:
 	product_name: str
 	product_url: str
 	website_name: str 
-	original_category: List[str] = field(default_factory=list)
+	
  
+	original_category: List[str] = field(default_factory=list)
 	product_image: List[str] = field(default_factory=list)
 	product_image_type: int = 1 
 	product_image_name: str = ""
@@ -189,6 +190,8 @@ class ProductExtractor:
 		
 	def _crawl_pagination(self, url: str, isSingle: bool) -> List[ProductInfo]:
 		products = []
+		processed_urls = set()
+  
 		if not isSingle: 
 			next_selector = self.scraping_config["pagination"]["next_selector"]
 			logger.debug(f"Next selector: {next_selector}")
@@ -204,11 +207,18 @@ class ProductExtractor:
 				html = requests.get(url, headers=headers)
 				bs = BeautifulSoup(html.content, "html5lib")
 				products_info = self._crawl_each_page(bs)
-				products.extend(products_info)
+				
+				for product in products_info:
+					if product.product_url not in processed_urls:
+						processed_urls.add(product.product_url)
+						products.append(product)
 
 				if not isSingle:
 					next_page = bs.select_one(next_selector)
-					url = next_page.get('href') if next_page else None 
+					if next_page: 
+						url = next_page.get('href')
+					else: 
+						continue
 				else:
 					return products 
  
@@ -388,51 +398,56 @@ class ProductExtractor:
 				if detail_selectors["detail_image"] != "None":
 					imgs = imgs_con.select(detail_selectors["detail_image"])
 					logger.debug(imgs)
-					for img in imgs:
-						logger.debug(f"{img.attrs}")
-						
-						img = img.find('img')
-						
-						src = img.get('src')
-						if img.get('alt'):
-							name = img.get('alt')
-						elif img.get('title'):
-							name = img.get('title')
-						else:
-							name = ''
-	  
+					
+					for img_div in imgs:
+						try:
+							img = img_div.find('img')
+							if img:
+								src = img.get('data-large_image') or img.get('src')
+								name = None
+								
+								for attr in ['alt', 'title', 'data-caption']:
+									if img.get(attr):
+										name = img.get(attr)
+										if name:
+											# clean the title
+											name = name.replace('_optimized', '')
+											name = re.sub(r'\.[^.]+$', '', name)  # remove file extension
+											break
+								
+								if not name:
+									# extract name from src URL as fallback
+									name = src.split('/')[-1].split('.')[0]
+									name = name.replace('-', ' ').replace('_', ' ')
+								
+								if not src.startswith("https://"):
+									src = 'https://' + src.lstrip('//')
+
+								logger.debug(f"Image source: {src}")
+								logger.debug(f"Image name: {name}")
+
+								if src:
+									images.append(src)
+								if name:
+									image_names.append(name)
+					
+						except Exception as e:
+							logger.error(f"Error extracting image details: {str(e)}")
+							continue
+
+			# specific for the tljus website
+			else:
+				if 'style' in imgs_con.attrs:
+					style_attr = imgs_con.attrs['style']
+					match = re.search(r'url\(["\']?(.*?)["\']?\)', style_attr)
+					if match:
+						src = match.group(1)
 						if not src.startswith("https://"):
-							src = 'https://' + src.lstrip('//')
-		  
-						logger.debug(f"Image source: {src}")
-						logger.debug(f"Image name: {name}")	
-		 
-						if src:
-							if isinstance(src, list):
-								images.extend(src)
-							else:
-								images.append(src)
-       
-						if name:
-							if isinstance(src, list):
-								image_names.extend(src)
-							else:
-								image_names.append(name)
-       
-				# specific for the tljus website
-				else:
-					if 'style' in imgs_con.attrs:
-						
-						style_attr = imgs_con.attrs['style']
-						match = re.search(r'url\(["\']?(.*?)["\']?\)', style_attr)
-						if match:
-							src = match.group(1)
-							if not src.startswith("https://"):
-								src = 'https://' + src
-							logger.debug(f"Extracted image source from style: {src}")
-							images.append(src)
-							image_names.append("")
-   
+							src = 'https://' + src
+						logger.debug(f"Extracted image source from style: {src}")
+						images.append(src)
+						image_names.append("")
+
 			# categories
 			categories = []
 			if detail_selectors["original_category"] != "None":
@@ -442,8 +457,9 @@ class ProductExtractor:
 				if categories_elem:
 					tags = categories_elem.find_all(detail_selectors["category_tag"])
 					for tag in tags:
-						tag_name = tag.get_text(strip=True)
-						if tag:
+						if not tag.__contains__('Sản phẩm nổi bật'):
+							tag_name = tag.get_text(strip=True)
+						
 							categories.append(tag_name)
        
 				if not categories: 
@@ -467,7 +483,8 @@ class ProductExtractor:
 				product_code=product_code,
 				product_description=product_description,
 				product_unit_price=product_uprice,
-				product_image=images
+				product_image=images,
+				product_image_name=image_names
 			)
 
 			return product 

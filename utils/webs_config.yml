@@ -32,7 +32,7 @@ websites:
         description: 
           - .menu-item-ingredients 
         unit_price: None 
-        image_selector: .menu-item-main-image
+        image_selector: .menu-item-main-wrapper
         detail_image: None
         original_category: .cake-type 
         category_tag: div
@@ -116,6 +116,28 @@ websites:
         original_category: .posted_in
         category_tag: a
 
-  # thecoffeehouse: 
-  #   path: 
+  thecoffeehouse: 
+    path: https://thecoffeehouse.com/
+    <<: *defaults
+    scraping: 
+      tag_name: ul
+      menu_selector: sub-menu
+      filter-keyword: collections
+      
+      product_tag: li
+      product_selector: .product
+      loading_type: single-page
+      skip_url_patterns: "danh-muc-san-pham" 
+      
+      product_detail_selectors: 
+        name: .product_title 
+        code: None 
+        description:
+          - .woocommerce-product-details__short-description
+          - .the_content_wrapper 
+        unit_price: .price 
+        image_selector: .woocommerce-product-gallery__wrapper
+        detail_image: .woocommerce-product-gallery__image 
+        original_category: .posted_in
+        category_tag: a    
   
