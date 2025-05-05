@@ -11,15 +11,15 @@ config = load_config("webs_config.yml")
 web_config = config["websites"]
 web_names = web_config.keys()
 
-with open("data/category_urls.json") as f:
+with open("data/drink_category_urls.json") as f:
     category_urls = json.load(f)
 
 all_products = []
 for name in web_names:
-    extractor = ProductExtractor(web_config, name)
     for url in category_urls[name]:
-        products = extractor.process_pages(url)
-        if products:
+        extractor = ProductExtractor(web_config, name, url)
+        products = extractor.process_pages()
+        if products:    
             all_products.extend(products)
 
 flat_products = []
@@ -35,5 +35,5 @@ for product in all_products:
         
 df = pd.DataFrame(data=flat_products)
 os.makedirs('data/test', exist_ok=True)
-df.to_csv('data/test/cake_products.csv', index=False, encoding='utf-8')
-logger.info(f"Saved {len(df)} products to CSV in tabular format") 
+df.to_csv('data/test/drink_products.csv', index=False, encoding='utf-8')
+logger.info(f"Saved {len(df)} products to CSV in tabular format")       

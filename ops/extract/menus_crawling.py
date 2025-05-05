@@ -34,12 +34,17 @@ def scrape_website(link, tag_name, menu_selector, filter_keyword):
 		bs = BeautifulSoup(html, 'html.parser')
 	 
 		menu_list = bs.find_all(tag_name, attrs={"class": re.compile(menu_selector)})
+		logger.debug(f"Menu list: {menu_list}")
 		for menu in menu_list: 
 			menu_items = menu.find_all('a', href=True)
    
 			for item in menu_items:
 				url = item['href']
-				
+				if url.startswith('#'):
+					url = item['data-url']
+     
+				logger.debug(f"Url: {url}")
+    
 				if (filter_keyword == "None" or filter_keyword in url):
 					# ensure absolute url 
 					if not url.startswith('https://'):

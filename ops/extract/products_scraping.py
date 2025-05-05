@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+import json
 import re
 import time
 from typing import Dict, List
@@ -53,23 +54,25 @@ class ProductExtractor:
  	Extract products for both pagination and progressive loading techniques
   	"""
 
-	def __init__(self, websites_config: Dict, website_name: str):
+	def __init__(self, websites_config: Dict, website_name: str, category_url: str):
+		# instance attributes
 		self.website_config = websites_config.get(website_name, {}) 
 		self.website_name = website_name
 		self.scraping_config = self.website_config.get('scraping', {})
 		self.popups_handled = False 
+		self.category_url = category_url
 
-	def process_pages(self, category_url: str) -> List[ProductInfo]:
-		logger.info(f"Extracting products from: ({category_url})")
+	def process_pages(self) -> List[ProductInfo]:
+		logger.info(f"Extracting products from: ({self.category_url})")
 	
 		all_products = []
-		current_page = category_url # first page 
+		current_page = self.category_url # first page 
 
 		loading_type = self.scraping_config['loading_type']
 		if loading_type == "pagination":
-			all_products = self._crawl_pagination(current_page, isSingle=False)
+			all_products = self._crawl_pagination(current_page)
 		elif loading_type == "single-page":
-			all_products = self._crawl_pagination(current_page, isSingle=True)	 
+			all_products = self._crawl_single_page(current_page)	 
 		elif loading_type == "progressive":
 			all_products = self._crawl_progessive(current_page)
 		elif loading_type == "tab-based":
@@ -80,6 +83,31 @@ class ProductExtractor:
   
 		return all_products
 
+	def _crawl_single_page(self, product_url:str) -> List[ProductInfo]:
+		logger.info(f"Starting single page extraction from: {product_url}")
+	
+		try:
+			headers = {
+				'User-Agent': web_config["http"]["user_agent"],
+				'Connection': 'keep-alive'
+			}
+			html = requests.get(product_url, headers=headers)
+			bs = BeautifulSoup(html.content, "html5lib")
+			
+			# Extract all products from the single page
+			products = self._crawl_each_page(bs)
+			
+			if not products:
+				logger.warning("No products found on the single page")
+				return []
+				
+			logger.info(f"Successfully extracted {len(products)} products from single page")
+			return products
+
+		except Exception as e:
+			logger.error(f"Error occurred when extracting products from single page: {str(e)}")
+			return []
+    
 	def _hanlde_popups(self):
 		if not self.popups_handled:
 		# cookies popup 
@@ -188,15 +216,14 @@ class ProductExtractor:
 			logger.debug("Current URL: " + url)
 			return []
 		
-	def _crawl_pagination(self, url: str, isSingle: bool) -> List[ProductInfo]:
+	def _crawl_pagination(self, url: str) -> List[ProductInfo]:
 		products = []
 		processed_urls = set()
   
-		if not isSingle: 
-			next_selector = self.scraping_config["pagination"]["next_selector"]
-			logger.debug(f"Next selector: {next_selector}")
+		next_selector = self.scraping_config["pagination"]["next_selector"]
+		logger.debug(f"Next selector: {next_selector}")
 
-			logger.info("Start pagination crawling ...")
+		logger.info("Start pagination crawling ...")
 		
 		while url: 
 			try:
@@ -213,15 +240,12 @@ class ProductExtractor:
 						processed_urls.add(product.product_url)
 						products.append(product)
 
-				if not isSingle:
-					next_page = bs.select_one(next_selector)
-					if next_page: 
-						url = next_page.get('href')
-					else: 
-						continue
-				else:
-					return products 
- 
+				next_page = bs.select_one(next_selector)
+				if next_page: 
+					url = next_page.get('href')
+				else: 
+					continue
+				
 			except Exception as e:
 				logger.error(f"Error occured when extracting products: str({e})")
 				
@@ -247,6 +271,7 @@ class ProductExtractor:
 	 
 					# button selector is a CSS selector including both a class and an element
 					load_more_button = driver.find_element(By.CSS_SELECTOR, self.scraping_config["button_selector"])
+					
 					while load_more_button and load_more_button.is_displayed():
 						logger.debug(f"Load More button found: {load_more_button}")
 						
@@ -256,9 +281,9 @@ class ProductExtractor:
 						driver.execute_script("arguments[0].click();", load_more_button)
 						time.sleep(SCROLL_PAUSE_TIME)
 						load_more_button = driver.find_element(By.CSS_SELECTOR, self.scraping_config["button_selector"])
-      
+
 					break 
- 
+						
 				except NoSuchElementException:
 					logger.info("No more loadmore button founded")
 					break 
@@ -322,6 +347,7 @@ class ProductExtractor:
 				website_path = self.website_config["path"]["website_path"]
 				website_path = website_path.rstrip('/')
 				product_url = urljoin(website_path, product_url)
+				logger.debug(f"Transformed product url: {product_url}")
 			elif not product_url:
 				logger.warning("Found a product card with no url")
 				skip_products += 1
@@ -346,150 +372,259 @@ class ProductExtractor:
 			bs = BeautifulSoup(html.content, "html5lib")
 			detail_selectors = self.scraping_config.get("product_detail_selectors", "")
 
-			# name
-			name_elem = bs.select_one(detail_selectors["name"])
-			logger.debug(f"Product name: {name_elem}")
-			if name_elem != "None":
-				product_name = name_elem.text.strip() if name_elem else ""
-    
-			if detail_selectors["description"] != "None":
-				product_description = ""
-				description_selectors = detail_selectors["description"]
-				
-				for selector in description_selectors:
-					description_elem = bs.select_one(selector)
-					if description_elem:
-						product_description = description_elem.text.strip()
-						break 
-			else: 
-				product_description = ""
-
-			# price, currency
-			if detail_selectors["unit_price"] != "None":
-				price_elem = bs.select_one(detail_selectors["unit_price"])
-    
-				logger.debug(f"Raw price element HTML: {price_elem}")
-				if price_elem:
-					try:
-						price_text = price_elem.get_text(strip=True)
-						logger.debug(f"Raw price text: {price_text}") 
-
-						# remove currency symbols and commas 
-						cleaned_price_text = re.sub(r'[^\d]', '', price_text)
-						
-						if cleaned_price_text.isdigit():
-							product_uprice = int(cleaned_price_text)
-							logger.debug(f"Unit price: {product_uprice}")
-					except Exception as e:
-						logger.error(f"Error parsing price: {str(e)}")
-	 
-					except Exception as e: 
-						logger.error(f"Error parsing price: str{e}")
-			else: 
-				product_uprice = 0
-    
-			# images
-			images = []
-			image_names = []
-			imgs_con = bs.select_one(detail_selectors.get("image_selector", ""))
-			logger.debug(f"Image HTML content: {imgs_con}")
+			# logger.debug("Product detail page HTML content:")
+			# logger.debug(bs.prettify())
+			
+			product_info = self._extract_from_html(bs, detail_selectors, product_url)
+			logger.debug(f"Product info check: {product_info}")
    
-			if imgs_con:
-				if detail_selectors["detail_image"] != "None":
-					imgs = imgs_con.select(detail_selectors["detail_image"])
-					logger.debug(imgs)
-					
-					for img_div in imgs:
-						try:
-							img = img_div.find('img')
-							if img:
-								src = img.get('data-large_image') or img.get('src')
-								name = None
-								
-								for attr in ['alt', 'title', 'data-caption']:
-									if img.get(attr):
-										name = img.get(attr)
-										if name:
-											# clean the title
-											name = name.replace('_optimized', '')
-											name = re.sub(r'\.[^.]+$', '', name)  # remove file extension
-											break
-								
-								if not name:
-									# extract name from src URL as fallback
-									name = src.split('/')[-1].split('.')[0]
-									name = name.replace('-', ' ').replace('_', ' ')
-								
-								if not src.startswith("https://"):
-									src = 'https://' + src.lstrip('//')
+			# extract product info from meta tags
+			if not product_info.product_name and not product_info.product_unit_price:
+				logger.info("HTML extraction failed or incomplete, attempting meta extraction...")
+				product_info = self._extract_from_meta(bs, product_url)
 
-								logger.debug(f"Image source: {src}")
-								logger.debug(f"Image name: {name}")
-
-								if src:
-									images.append(src)
-								if name:
-									image_names.append(name)
-					
-						except Exception as e:
-							logger.error(f"Error extracting image details: {str(e)}")
-							continue
-
-			# specific for the tljus website
-			else:
-				if 'style' in imgs_con.attrs:
-					style_attr = imgs_con.attrs['style']
-					match = re.search(r'url\(["\']?(.*?)["\']?\)', style_attr)
-					if match:
-						src = match.group(1)
-						if not src.startswith("https://"):
-							src = 'https://' + src
-						logger.debug(f"Extracted image source from style: {src}")
-						images.append(src)
-						image_names.append("")
-
-			# categories
-			categories = []
-			if detail_selectors["original_category"] != "None":
-				categories_elem = bs.select_one(detail_selectors["original_category"])
-				logger.debug(f"Category list: {categories_elem}")
-    
-				if categories_elem:
-					tags = categories_elem.find_all(detail_selectors["category_tag"])
-					for tag in tags:
-						if not tag.__contains__('Sản phẩm nổi bật'):
-							tag_name = tag.get_text(strip=True)
-						
-							categories.append(tag_name)
-       
-				if not categories: 
-					parsed_url = urlparse(product_url)
-					path_parts = parsed_url.path.strip('/').split('/')
-					categories.append(path_parts[-2])
-
-      
-			logger.debug(f"Categories: {categories}")
-
-			# sku 
-			code_elem = bs.select_one(detail_selectors["code"]) if detail_selectors["code"] else ""
-			product_code = code_elem.get_text(strip=True) if code_elem else ""
-			logger.debug(f"SKU: {product_code}")
-   
-			product = ProductInfo(
-				product_name=product_name,
-				product_url=product_url,
-				original_category=categories,
-				website_name=self.website_name,
-				product_code=product_code,
-				product_description=product_description,
-				product_unit_price=product_uprice,
-				product_image=images,
-				product_image_name=image_names
-			)
-
-			return product 
+			return product_info
 
 		except Exception as e:
 			logger.error(f"Error extracting product details from {product_url}")
 			logger.error(str(e))
 			return None 
+
+	def _extract_from_html(self, bs, detail_selectors, product_url) -> ProductInfo:
+		logger.info("Extract from HTML")
+  		# name
+		name_elem = bs.select_one(detail_selectors["name"])	
+		logger.debug(f"Product name element: {name_elem}")	
+		if name_elem != "None":
+			product_name = name_elem.text.strip() if name_elem else ""
+
+		if detail_selectors["description"] != "None":
+			product_description = ""
+			description_selectors = detail_selectors["description"]
+			
+			for selector in description_selectors:
+				description_elem = bs.select_one(selector)
+				if description_elem:
+					product_description = description_elem.text.strip()
+					break 
+		else: 
+			product_description = ""
+
+		# price, currency
+		if detail_selectors["unit_price"] != "None":
+			price_elem = bs.select_one(detail_selectors["unit_price"])
+
+			logger.debug(f"Raw price element HTML: {price_elem}")
+			if price_elem:
+				try:
+					price_text = price_elem.get_text(strip=True)
+					logger.debug(f"Raw price text: {price_text}") 
+
+					# remove currency symbols and commas 
+					cleaned_price_text = re.sub(r'[^\d]', '', price_text)
+					
+					if cleaned_price_text.isdigit():
+						product_uprice = int(cleaned_price_text)
+						logger.debug(f"Unit price: {product_uprice}")
+				except Exception as e:
+					logger.error(f"Error parsing price: {str(e)}")
+ 
+				except Exception as e: 
+					logger.error(f"Error parsing price: str{e}")
+			else: 
+				product_uprice = 0
+
+		# images
+		images = []
+		image_names = []
+		imgs_con = bs.select_one(detail_selectors.get("image_selector", ""))
+		logger.debug(f"Image HTML content: {imgs_con}")
+
+		if imgs_con:
+			if detail_selectors["detail_image"] != "None":
+				imgs = imgs_con.select(detail_selectors["detail_image"])
+				logger.debug(imgs)
+				
+				for img_div in imgs:
+					try:
+						img = img_div.find('img')
+						if img:
+							src = img.get('data-large_image') or img.get('src')
+							name = None
+							
+							for attr in ['alt', 'title', 'data-caption']:
+								if img.get(attr):
+									name = img.get(attr)
+									if name:
+										# clean the title
+										name = name.replace('_optimized', '')
+										name = re.sub(r'\.[^.]+$', '', name)  # remove file extension
+										break
+							
+							if not name:
+								# extract name from src URL as fallback
+								name = src.split('/')[-1].split('.')[0]
+								name = name.replace('-', ' ').replace('_', ' ')
+							
+							if not src.startswith("https://"):
+								src = 'https://' + src.lstrip('//')
+
+							logger.debug(f"Image source: {src}")
+							logger.debug(f"Image name: {name}")
+
+							if src:
+								images.append(src)
+							if name:
+								image_names.append(name)
+				
+					except Exception as e:
+						logger.error(f"Error extracting image details: {str(e)}")
+						continue
+
+		# specific for the tljus website
+			if 'style' in imgs_con.attrs:
+				style_attr = imgs_con.attrs['style']
+				match = re.search(r'url\(["\']?(.*?)["\']?\)', style_attr)
+				if match:
+					src = match.group(1)
+					if not src.startswith("https://"):
+						src = 'https://' + src
+					logger.debug(f"Extracted image source from style: {src}")
+					images.append(src)
+					image_names.append("")
+		else:
+			logger.warning(f"No image container found")
+    
+		# categories
+		categories = []
+		if detail_selectors["original_category"] != "None":
+			categories_elem = bs.select_one(detail_selectors["original_category"])
+			logger.debug(f"Category list: {categories_elem}")
+
+			if categories_elem:
+				tags = categories_elem.find_all(detail_selectors["category_tag"])
+				for tag in tags:
+					if not tag.__contains__('Sản phẩm nổi bật'):
+						tag_name = tag.get_text(strip=True)
+					
+						categories.append(tag_name)
+   
+			if not categories: 
+				parsed_url = urlparse(product_url) 
+				path_parts = parsed_url.path.strip('/').split('/')
+				categories.append(path_parts[-2])
+
+  
+		logger.debug(f"Categories: {categories}")
+
+		# sku 
+		code_elem = bs.select_one(detail_selectors["code"]) if detail_selectors["code"] else ""
+		product_code = code_elem.get_text(strip=True) if code_elem else ""
+		logger.debug(f"SKU: {product_code}")
+  
+		product = ProductInfo(
+			product_name=product_name,
+			product_url=product_url,
+			original_category=categories,
+			website_name=self.website_name,
+			product_code=product_code,
+			product_description=product_description,
+			product_unit_price=product_uprice,
+			product_image=images,
+			product_image_name=image_names
+		)
+
+		return product
+
+	# Schema.org markup 
+	def _extract_from_meta(self, bs, product_url) -> ProductInfo:
+		try:
+			logger.info("Extract from meta")
+			
+			# First try meta tags
+			meta_name = bs.find('meta', {'property': 'og:title'})
+			meta_price = bs.find('meta', {'property': 'product:price:amount'})
+			meta_desc = bs.find('meta', {'property': 'og:description'})
+			meta_image = bs.find('meta', {'property': 'og:image'})
+			
+			if any([meta_name, meta_price, meta_desc, meta_image]):
+				logger.debug("Found product data in meta tags")
+				
+				product_name = meta_name['content'] if meta_name else ''
+				product_uprice = int(float(meta_price['content'])) if meta_price else 0
+				product_description = meta_desc['content'] if meta_desc else ''
+				product_image = [meta_image['content']] if meta_image else []
+			else:
+				# Try to find product data in script tags
+				logger.debug("Searching for product data in script tags")
+				product_data = None
+				
+				for script in bs.find_all('script', type="application/json"):
+					if not script.string:
+						continue
+						
+					try:
+						data = json.loads(script.string)
+						if '@type' in data and data['@type'] == 'Product':
+							logger.debug("Found product schema data")
+							product_data = data
+							break
+					except:
+						continue
+	                    
+				if not product_data:
+					# Try window.shop data pattern
+					shop_scripts = [s for s in bs.find_all('script') if s.string and 'window.shop' in s.string]
+					if shop_scripts:
+						logger.debug("Found window.shop data")
+						shop_script = shop_scripts[0].string
+						
+						# Find other related script with product data
+						product_scripts = [s for s in bs.find_all('script') if s.string and 'product:' in s.string]
+						if product_scripts:
+							product_script = product_scripts[0].string
+							try:
+								# Extract product data using regex
+								import re
+								name_match = re.search(r'"product_title":\s*"([^"]+)"', product_script)
+								price_match = re.search(r'"price":\s*(\d+)', product_script)
+								image_match = re.findall(r'"image":\s*"([^"]+)"', product_script)
+								
+								product_name = name_match.group(1) if name_match else ''
+								product_uprice = int(price_match.group(1)) if price_match else 0
+								product_image = image_match if image_match else []
+								product_description = ''
+								
+								logger.debug(f"Extracted from shop data - Name: {product_name}, Price: {product_uprice}")
+							except Exception as e:
+								logger.error(f"Failed to extract from shop data: {e}")
+								return None
+	                    
+				if not product_name:
+					logger.warning("No product data found in any script tags")
+					return None
+					
+			# Create product info object
+			parsed_url = urlparse(self.category_url)
+			path_parts = parsed_url.path.strip('/').split('/')
+			product_category = [path_parts[-1]] if path_parts else []
+			
+			product = ProductInfo(
+				product_name=product_name,
+				product_url=product_url,
+				original_category=product_category,
+				website_name=self.website_name,
+				product_code="",
+				product_description=product_description,
+				product_unit_price=product_uprice,
+				product_image=product_image,
+				product_image_name=[product_name.lower()] if product_name else []
+			)
+			
+			logger.debug(f"Created product info: {product}")
+			return product
+
+		except Exception as e:
+			logger.error(f"Error extracting from meta tags: {str(e)}")
+			return None
+      
