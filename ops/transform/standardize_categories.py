@@ -19,7 +19,13 @@ CATEGORIES_MAPPING = {
     
     'Chilled & Cold': ['pudding', 'bánh lạnh', 'sữa chua', 'bánh entremet', 'bánh kem bắp', 'bánh mousse'],
     
-    'Sets': ['set bánh tổng hợp', 'sets', 'set bánh', 'sweetbox', 'sweetin - bánh hộp thiếc cao cấp']
+    'Sets': ['set bánh tổng hợp', 'sets', 'set bánh', 'sweetbox', 'sweetin - bánh hộp thiếc cao cấp'],
+    
+    'Coffee': ['cold-brew', 'ca-phe-highlight-2', 'a-me', 'ca-phe-viet-nam', 'ca-phe-may'],
+    
+    'Tea': ['tra-xanh-tay-bac', 'tra-trai-cay', 'tra-sua', 'hi-tea-tra', 'chocolate-1'],
+    
+    'Frosty': ['trai-cay-xay-0-c', 'da-xay-frosty-1']
 }
 
 def standardize_category(df_products_name_cate: pd.DataFrame) -> List[str]:

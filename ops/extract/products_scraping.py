@@ -220,12 +220,16 @@ class ProductExtractor:
 		products = []
 		processed_urls = set()
   
+		page_count = 0
+		max_pages = 20
+  
 		next_selector = self.scraping_config["pagination"]["next_selector"]
 		logger.debug(f"Next selector: {next_selector}")
-
+		
 		logger.info("Start pagination crawling ...")
 		
-		while url: 
+		while url and page_count < max_pages: 
+			page_count += 1
 			try:
 				headers = {
 					'User-Agent': web_config["http"]["user_agent"],
@@ -245,7 +249,7 @@ class ProductExtractor:
 					url = next_page.get('href')
 				else: 
 					continue
-				
+			
 			except Exception as e:
 				logger.error(f"Error occured when extracting products: str({e})")
 				
@@ -325,10 +329,12 @@ class ProductExtractor:
 	   		product_tag, 
 		  	class_=re.compile(product_selector.replace(".", ""))
 		)
+		
 		logger.info(f"Found {len(product_cards)} product elements")
 
 		skip_products = 0
 		for card in product_cards:
+			logger.debug(f"Product card: {card}")
 			product_url = card.get('href')
 			if not product_url:
 				anchor = card.find('a')
@@ -392,24 +398,44 @@ class ProductExtractor:
 
 	def _extract_from_html(self, bs, detail_selectors, product_url) -> ProductInfo:
 		logger.info("Extract from HTML")
-  		# name
-		name_elem = bs.select_one(detail_selectors["name"])	
-		logger.debug(f"Product name element: {name_elem}")	
+
+		product_name = ""
+		product_description = ""
+		product_uprice = 0  # Initialize price to 0
+		images = []
+		image_names = []
+		categories = []
+  
+		# name
+		name_elem = bs.select_one(detail_selectors["name"])
+		
 		if name_elem != "None":
 			product_name = name_elem.text.strip() if name_elem else ""
 
+		logger.debug(f"Product name: {product_name}")
+  
 		if detail_selectors["description"] != "None":
 			product_description = ""
 			description_selectors = detail_selectors["description"]
 			
-			for selector in description_selectors:
-				description_elem = bs.select_one(selector)
+			# Check if description_selectors is a string or a list
+			if isinstance(description_selectors, str):
+				# Handle single selector as string
+				description_elem = bs.select_one(description_selectors)
 				if description_elem:
 					product_description = description_elem.text.strip()
-					break 
+			else:
+				# Handle multiple selectors as list
+				for selector in description_selectors:
+					description_elem = bs.select_one(selector)
+					if description_elem:
+						product_description = description_elem.text.strip()
+						break 
 		else: 
 			product_description = ""
 
+		logger.debug(f"Product description: {product_description}")
+  
 		# price, currency
 		if detail_selectors["unit_price"] != "None":
 			price_elem = bs.select_one(detail_selectors["unit_price"])
@@ -443,7 +469,7 @@ class ProductExtractor:
 		if imgs_con:
 			if detail_selectors["detail_image"] != "None":
 				imgs = imgs_con.select(detail_selectors["detail_image"])
-				logger.debug(imgs)
+				logger.debug(f'Image element: {imgs}')
 				
 				for img_div in imgs:
 					try:
@@ -469,8 +495,8 @@ class ProductExtractor:
 							if not src.startswith("https://"):
 								src = 'https://' + src.lstrip('//')
 
-							logger.debug(f"Image source: {src}")
-							logger.debug(f"Image name: {name}")
+							# logger.debug(f"Image source: {src}")
+							# logger.debug(f"Image name: {name}")
 
 							if src:
 								images.append(src)
