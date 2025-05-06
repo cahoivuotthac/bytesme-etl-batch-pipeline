@@ -539,8 +539,11 @@ class ProductExtractor:
 				parsed_url = urlparse(product_url) 
 				path_parts = parsed_url.path.strip('/').split('/')
 				categories.append(path_parts[-2])
-
-  
+    
+		elif detail_selectors["original_category"].startswith("literal:"):
+			category_value = detail_selectors["original_category"].replace("literal:", "", 1)
+			categories.append(category_value)
+   
 		logger.debug(f"Categories: {categories}")
 
 		# sku 

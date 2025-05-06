@@ -163,7 +163,7 @@ websites:
         unit_price: .price-new-pro-detail
         image_selector: .left-pro-detail
         detail_image: .MagicZoom
-        original_category: Bingu 
+        original_category: "literal:Bingsu"
         category_tag: None  
 
   # seorbingsu: 
