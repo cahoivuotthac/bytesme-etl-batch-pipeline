@@ -541,73 +541,41 @@ class ProductExtractor:
 		try:
 			logger.info("Extract from meta")
 			
-			# First try meta tags
 			meta_name = bs.find('meta', {'property': 'og:title'})
-			meta_price = bs.find('meta', {'property': 'product:price:amount'})
-			meta_desc = bs.find('meta', {'property': 'og:description'})
+			meta_price = bs.find('meta', {'property': 'og:price:amount'})
 			meta_image = bs.find('meta', {'property': 'og:image'})
 			
-			if any([meta_name, meta_price, meta_desc, meta_image]):
+			if any([meta_name, meta_price, meta_image]):
 				logger.debug("Found product data in meta tags")
 				
 				product_name = meta_name['content'] if meta_name else ''
-				product_uprice = int(float(meta_price['content'])) if meta_price else 0
-				product_description = meta_desc['content'] if meta_desc else ''
+				product_uprice = int(''.join(re.findall(r'\d', meta_price['content']))) if meta_price else 0
 				product_image = [meta_image['content']] if meta_image else []
-			else:
-				# Try to find product data in script tags
-				logger.debug("Searching for product data in script tags")
-				product_data = None
-				
-				for script in bs.find_all('script', type="application/json"):
-					if not script.string:
-						continue
-						
+			
+			# product description 
+			scripts = bs.find_all('script')
+			xr_data = None
+			for script in scripts:
+				if script.string and 'const xr =' in script.string:
 					try:
-						data = json.loads(script.string)
-						if '@type' in data and data['@type'] == 'Product':
-							logger.debug("Found product schema data")
-							product_data = data
-							break
-					except:
-						continue
-	                    
-				if not product_data:
-					# Try window.shop data pattern
-					shop_scripts = [s for s in bs.find_all('script') if s.string and 'window.shop' in s.string]
-					if shop_scripts:
-						logger.debug("Found window.shop data")
-						shop_script = shop_scripts[0].string
-						
-						# Find other related script with product data
-						product_scripts = [s for s in bs.find_all('script') if s.string and 'product:' in s.string]
-						if product_scripts:
-							product_script = product_scripts[0].string
-							try:
-								# Extract product data using regex
-								import re
-								name_match = re.search(r'"product_title":\s*"([^"]+)"', product_script)
-								price_match = re.search(r'"price":\s*(\d+)', product_script)
-								image_match = re.findall(r'"image":\s*"([^"]+)"', product_script)
-								
-								product_name = name_match.group(1) if name_match else ''
-								product_uprice = int(price_match.group(1)) if price_match else 0
-								product_image = image_match if image_match else []
-								product_description = ''
-								
-								logger.debug(f"Extracted from shop data - Name: {product_name}, Price: {product_uprice}")
-							except Exception as e:
-								logger.error(f"Failed to extract from shop data: {e}")
-								return None
-	                    
-				if not product_name:
-					logger.warning("No product data found in any script tags")
-					return None
-					
-			# Create product info object
+						match = re.search(r'const xr =\s*(\[.*?\]);', script.string, re.DOTALL)
+						if match:
+							json_str = match.group(1)
+							# Parse the JSON array
+							product_data = json.loads(json_str)[0]  # Get first item
+							if 'product_description' in product_data:
+								product_description = product_data['product_description']
+								logger.debug(f"Found product description: {product_description}")
+								break
+					except json.JSONDecodeError as e:
+						logger.error(f"Error parsing product JSON: {str(e)}")
+					except Exception as e:
+						logger.error(f"Error extracting product description: {str(e)}")
+      
+			# product category 			
 			parsed_url = urlparse(self.category_url)
 			path_parts = parsed_url.path.strip('/').split('/')
-			product_category = [path_parts[-1]] if path_parts else []
+			product_category = path_parts[-1] 
 			
 			product = ProductInfo(
 				product_name=product_name,
@@ -615,7 +583,7 @@ class ProductExtractor:
 				original_category=product_category,
 				website_name=self.website_name,
 				product_code="",
-				product_description=product_description,
+				# product_description=product_description,
 				product_unit_price=product_uprice,
 				product_image=product_image,
 				product_image_name=[product_name.lower()] if product_name else []

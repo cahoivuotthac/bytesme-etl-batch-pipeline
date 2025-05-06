@@ -139,4 +139,6 @@ websites:
         detail_image: .thumb
         original_category: None 
         category_tag: None 
-  
+
+  # igloo:
+  #   path: 
