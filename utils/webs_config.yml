@@ -115,60 +115,10 @@ websites:
         original_category: .posted_in
         category_tag: a
 
-  thecoffeehouse: 
-    path: 
-      website_path: https://thecoffeehouse.com/collections/all
-    <<: *defaults
-    scraping: 
-      tag_name: ul
-      menu_selector: hidden-sm 
-      filter-keyword: collections 
-      
-      product_tag: div
-      product_selector: .menu_item_image
-      loading_type: single-page
-      skip_url_patterns: None  
-      
-      product_detail_selectors: 
-        name: None 
-        code: None 
-        description: None 
-        unit_price: None  
-        image_selector: None 
-        detail_image: None 
-        original_category: None 
-        category_tag: None 
-
-  igloo:
-    path: 
-      website_path: https://igloo.com.vn/
-    <<: *defaults
-    scraping: 
-      tag_name: div
-      menu_selector: None 
-      filter-keyword: None
-
-      loading_type: pagination
-      pagination:
-        next_selector: "a.page-link:contains(Next)" 
-
-      product_tag: div
-      product_selector: .product
-      skip_url_patterns: None
-
-      product_detail_selectors:
-        name: .title-pro-detail
-        code: None
-        description: .desc-pro-detail
-        unit_price: .price-new-pro-detail
-        image_selector: .left-pro-detail
-        detail_image: .MagicZoom
-        original_category: "literal:Bingsu"
-        category_tag: None  
-
-  # seorbingsu: 
-  #   path: http://seorbingsu.vn/
-  #       <<: *defaults
+  # thecoffeehouse: 
+  #   path: 
+  #     website_path: https://thecoffeehouse.com/collections/all
+  #   <<: *defaults
   #   scraping: 
   #     tag_name: ul
   #     menu_selector: hidden-sm 
@@ -187,4 +137,80 @@ websites:
   #       image_selector: None 
   #       detail_image: None 
   #       original_category: None 
+  #       category_tag: None 
+
+  # igloo:
+  #   path: 
+  #     website_path: https://igloo.com.vn/
+  #   <<: *defaults
+  #   scraping: 
+  #     tag_name: div
+  #     menu_selector: None 
+  #     filter-keyword: None
+
+  #     loading_type: pagination
+  #     pagination:
+  #       next_selector: "a.page-link:contains(Next)" 
+
+  #     product_tag: div
+  #     product_selector: .product
+  #     skip_url_patterns: None
+
+  #     product_detail_selectors:
+  #       name: .title-pro-detail
+  #       code: None
+  #       description: .desc-pro-detail
+  #       unit_price: .price-new-pro-detail
+  #       image_selector: .left-pro-detail
+  #       detail_image: .MagicZoom
+  #       original_category: "literal:Bingsu"
   #       category_tag: None  
+
+  # seorbingsu: 
+  #   path: 
+  #     website_path: http://seorbingsu.vn/
+  #   <<: *defaults
+  #   scraping: 
+  #     tag_name: div
+  #     menu_selector: products-view
+  #     filter-keyword: None 
+      
+  #     product_tag: div
+  #     product_selector: .item_product_main
+  #     loading_type: single-page
+  #     skip_url_patterns: None  
+      
+  #     product_detail_selectors: 
+  #       name: .title-product
+  #       code: None 
+  #       description: None 
+  #       unit_price: .product-price  
+  #       image_selector: .swiper-wrapper 
+  #       detail_image: .swiper-slide 
+  #       original_category: "literal:Topping thêm" 
+  #       category_tag: None  
+
+  # jenis: 
+  #   path: 
+  #     website_path: https://jenis.com/
+  #   <<: *defaults
+  #   scraping: 
+  #     tag_name: None
+  #     menu_selector: None
+  #     filter-keyword: None
+      
+  #     product_tag: div
+  #     product_selector: .container
+  #     loading_type: single-page
+  #     skip_url_patterns: None  
+      
+  #     product_detail_selectors: 
+  #       name: .product-title
+  #       code: None 
+  #       description: .product-detail_description
+  #       unit_price: .price__regular
+  #       image_selector: .product-media-modal__content
+  #       detail_image: img
+  #       original_category: "literal:Ice cream" 
+  #       category_tag: None
+

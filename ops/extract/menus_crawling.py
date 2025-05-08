@@ -64,5 +64,3 @@ def scrape_website(link, tag_name, menu_selector, filter_keyword):
 	
 	return list(all_urls) 
 
-if __name__ == "__main__":
-	logger.info('Starting to crawl...')

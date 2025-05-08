@@ -32,7 +32,6 @@ class ProductInfo:
 	product_name: str
 	product_url: str
 	website_name: str 
-	
  
 	original_category: List[str] = field(default_factory=list)
 	product_image: List[str] = field(default_factory=list)
@@ -44,7 +43,7 @@ class ProductInfo:
 	product_unit_price: int = 0
 	product_currency: str="₫"
 	product_discount_percentage: float = 0.0
-	product_total_orders: int = 10
+	product_total_orders: int = 0
 	product_stock_quantity: int = 50
 	product_total_ratings: int = 0
 	product_overall_stars: float = 0.0
@@ -523,27 +522,29 @@ class ProductExtractor:
     
 		# categories
 		categories = []
-		if detail_selectors["original_category"] != "None":
-			categories_elem = bs.select_one(detail_selectors["original_category"])
-			logger.debug(f"Category list: {categories_elem}")
+		category_selector = detail_selectors['original_category']
+		if category_selector and category_selector != "None":
+			if isinstance(category_selector, str) and category_selector.startswith("literal:"):
+				category_value = category_selector[8:]
+				categories.append(category_value)
+			else:
+       
+				categories_elem = bs.select_one(category_selector)
+				logger.debug(f"Category list: {categories_elem}")
 
-			if categories_elem:
-				tags = categories_elem.find_all(detail_selectors["category_tag"])
-				for tag in tags:
-					if not tag.__contains__('Sản phẩm nổi bật'):
-						tag_name = tag.get_text(strip=True)
-					
-						categories.append(tag_name)
+				if categories_elem:
+					tags = categories_elem.find_all(detail_selectors["category_tag"])
+					for tag in tags:
+						if not tag.__contains__('Sản phẩm nổi bật'):
+							tag_name = tag.get_text(strip=True)
+						
+							categories.append(tag_name)
    
 			if not categories: 
 				parsed_url = urlparse(product_url) 
 				path_parts = parsed_url.path.strip('/').split('/')
 				categories.append(path_parts[-2])
     
-		elif detail_selectors["original_category"].startswith("literal:"):
-			category_value = detail_selectors["original_category"].replace("literal:", "", 1)
-			categories.append(category_value)
-   
 		logger.debug(f"Categories: {categories}")
 
 		# sku 

@@ -4,7 +4,7 @@ from utils.logging_config import setup_logging
 
 logger = setup_logging()
 
-df = pd.read_csv('data/test/unique_cake_products.csv')
+df = pd.read_csv('data/raw/drink_products.csv')
 df_transform = df.copy()
 
 # print(f"Unique categories in input: {df['original_category'].unique()}")
@@ -23,4 +23,4 @@ df_transform['category_name'] = mapped_categories
 df_transform.drop('original_category', axis=1, inplace=True)
 logger.info(f"5 first categories in transformed dataset: {df_transform['category_name'].head()}")
 
-df_transform.to_csv('data/test/transformed_cake_products.csv', index=False)
+df_transform.to_csv('data/processed/drink_products.csv', index=False)

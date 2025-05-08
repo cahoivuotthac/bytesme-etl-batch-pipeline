@@ -1,6 +1,5 @@
 import pandas as pd
 from utils.logging_config import setup_logging
-import csv 
 
 logger = setup_logging()
 
