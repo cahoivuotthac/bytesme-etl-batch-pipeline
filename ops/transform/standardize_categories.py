@@ -23,7 +23,9 @@ CATEGORIES_MAPPING = {
     
     'Coffee': ['cold-brew', 'ca-phe-highlight-2', 'a-me', 'ca-phe-viet-nam', 'ca-phe-may'],
     
-    'Tea': ['tra-xanh-tay-bac', 'tra-trai-cay', 'tra-sua', 'hi-tea-tra', 'chocolate-1'],
+    'Tea': ['tra-xanh-tay-bac', 'tra-trai-cay', 'tra-sua', 'hi-tea-tra'],
+    
+    'Chocolate & Cacao': ['chocolate-1'],
     
     'Frosty': ['trai-cay-xay-0-c', 'da-xay-frosty-1']
 }

@@ -1,8 +1,12 @@
 import os
+import time
 import pandas as pd
 from utils.logging_config import setup_logging
-import random 
 import numpy as np 
+import requests
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def generate_product_code(website_name: str, product_cat: str, iter: int) -> str:
 	brand = website_name[:2].upper()
@@ -34,7 +38,45 @@ def generate_overall_stars() -> float:
 def generate_total_orders() -> int: 
     return np.random.randint(0, 500)
 
-
+def generate_product_description_with_ollama(row):
+	# First install Ollama: https://ollama.com/
+	# Then run: ollama pull tinyllama
+	
+	"""
+	The extract process:
+	- Taking Vietnamese prompt 
+	- Internally thinking in English 
+	- Generating the description content in English 
+	- Transalating that description to Vietnamese 
+	"""
+	
+	try:
+		
+		input_prompt = f"""
+			Hãy viết một đoạn mô tả sản phẩm chi tiết bằng tiếng Việt cho một loại đồ uống, dựa trên các thông tin sau:
+			- Tên sản phẩm: {row['product_name']}
+			- Danh mục: {row['category_name']}
+			- Giá bán: {row['product_unit_price']} VND
+			- Đánh giá: {row['product_overall_stars']}/5 ({row['product_total_ratings']} lượt đánh giá)
+			- Số lượng đã bán: {row['product_total_orders']} đơn
+			Mô tả cần hấp dẫn, rõ ràng và chuẩn SEO để đăng trên website bán hàng. Mô tả không bao gồm các thông tin mô tả được chỉ ra ở phía trên.
+			Phần mô tả không được chứa các kí tự đặc biệt. 
+		"""
+		response = requests.post('http://localhost:11434/api/generate', 
+							   json={
+								   'model': 'llama3',
+								   'prompt': input_prompt,
+								   'stream': False,
+           							'temperature': 0.9
+							   })
+		
+		result = response.json()
+		
+		return result['response']
+	except Exception as e:
+		print(f"Error generating description for {row['product_name']} with Ollama: {e}")
+		return ""
+		
 def update_product_dataset(input_file: str, output_file: str) -> pd.DataFrame: 
 	df = pd.read_csv(input_file)
 	cat_counters = {}
@@ -61,11 +103,14 @@ def update_product_dataset(input_file: str, output_file: str) -> pd.DataFrame:
 		df.at[idx, 'product_overall_stars'] = generate_overall_stars()
 		df.at[idx, 'product_total_orders'] = generate_total_orders()
   
-
+		description = generate_product_description_with_ollama(df.loc[idx])
+		df.at[idx, 'product_description'] = str(description) if description is not None else ''
+		print(f"Product description: {df.at[idx, 'product_description']}")
+  
 	df['product_discount_percentage'] = generate_discount_percentage(len(df))
 
-	# os.makedirs('data/processed', exist_ok=True)
-	# output_file_exists = os.path.isfile(output_file)
+	os.makedirs('data/processed', exist_ok=True)
+	output_file_exists = os.path.isfile(output_file)
  
 	df.to_csv(
 		output_file,

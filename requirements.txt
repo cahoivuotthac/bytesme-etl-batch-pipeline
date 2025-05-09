@@ -6,4 +6,5 @@ html5lib
 webdriver-manager
 pyyaml 
 pandas
-rapidfuzz==3.13.0
+openai==1.78.0
+transformers
