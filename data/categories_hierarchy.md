@@ -1,16 +1,15 @@
-- Foods 
+- Foods
   - Cakes
-  - Breads & Buns 
-  - Pastries & Pies 
+  - Breads & Buns
+  - Pastries & Pies
   - Season & Specialist
   - Cookies & Biscuits
   - Chilled & Cold
   - Sets
-  - Bingsu 
-  - Mochi
-  - Gelato & Ice cream
+  - Bingsu
+  - Topping thêm
 
-- Beverages 
+- Beverages
   - Cà phê
   - Trà
   - Nước ép

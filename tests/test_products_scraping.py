@@ -2,16 +2,16 @@ import json
 import os 
 import pandas as pd
 from ops.extract.products_scraping import ProductExtractor
-from utils.logging_config import load_config
-from utils.logging_config import setup_logging
+from config.logger_config import load_config
+from config.logger_config import setup_logger
 
-logger = setup_logging()
+logger = setup_logger()
 config = load_config("webs_config.yml")
 
 web_config = config["websites"]
 web_names = web_config.keys()
 
-with open("data/cake_urls.json") as f:
+with open("data/bingsu_urls.json") as f:
     category_urls = json.load(f)
 
 all_products = []
@@ -38,7 +38,7 @@ df = pd.DataFrame(data=flat_products)
 # Create dir if not exist 
 os.makedirs('data/raw', exist_ok=True)
 
-file_path = 'data/raw/cake_products.csv' 
+file_path = 'data/raw/bingsu_products.csv' 
 file_exist = os.path.isfile(file_path)
 
 df.to_csv(

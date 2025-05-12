@@ -1,7 +1,7 @@
 import pandas as pd
-from utils.logging_config import setup_logging
+from config.logger_config import setup_logger
 
-logger = setup_logging()
+logger = setup_logger()
 
 def remove_duplicates(input_path: str, output_path: str):
 	df = pd.read_csv(input_path)
@@ -12,4 +12,4 @@ def remove_duplicates(input_path: str, output_path: str):
 	
 	logger.info(f"Removed {len(df) - len(unique_df)} duplicate records")
 	
-	
+# remove_duplicates('data/raw/drink_products.csv', 'data/processed/drink_products.csv')	

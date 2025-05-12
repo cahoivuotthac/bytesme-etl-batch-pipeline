@@ -6,7 +6,7 @@ from typing import Dict, List
 from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup
 import requests
-from utils.logging_config import setup_logging, load_config, setup_selenium
+from config.logger_config import setup_logger, load_config, setup_selenium
 
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException, TimeoutException
@@ -15,7 +15,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 import time 
 
-logger = setup_logging()
+logger = setup_logger()
 web_config = load_config("webs_config.yml")
 driver = setup_selenium(web_config["http"]["user_agent"])
 
@@ -31,9 +31,9 @@ class ProductInfo:
 	# metadata 
 	product_name: str
 	product_url: str
-	website_name: str 
+	product_band: str 
  
-	original_category: List[str] = field(default_factory=list)
+	category_name: List[str] = field(default_factory=list)
 	product_image: List[str] = field(default_factory=list)
 	product_image_type: int = 1 
 	product_image_name: str = ""
@@ -555,8 +555,8 @@ class ProductExtractor:
 		product = ProductInfo(
 			product_name=product_name,
 			product_url=product_url,
-			original_category=categories,
-			website_name=self.website_name,
+			category_name=categories,
+			product_band=self.website_name,
 			product_code=product_code,
 			product_description=product_description,
 			product_unit_price=product_uprice,
@@ -610,8 +610,8 @@ class ProductExtractor:
 			product = ProductInfo(
 				product_name=product_name,
 				product_url=product_url,
-				original_category=product_category,
-				website_name=self.website_name,
+				category_name=product_category,
+				product_band=self.website_name,
 				product_code="",
 				# product_description=product_description,
 				product_unit_price=product_uprice,

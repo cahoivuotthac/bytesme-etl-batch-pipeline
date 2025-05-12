@@ -1,7 +1,7 @@
 import os
 import time
 import pandas as pd
-from utils.logging_config import setup_logging
+from config.logger_config import setup_logger
 import numpy as np 
 import requests
 from dotenv import load_dotenv
@@ -40,11 +40,10 @@ def generate_total_orders() -> int:
 
 def generate_product_description_with_ollama(row):
 	# First install Ollama: https://ollama.com/
-	# Then run: ollama pull tinyllama
+	# Then run: ollama pull <model_name>
 	
 	"""
 	The extract process:
-	- Taking Vietnamese prompt 
 	- Internally thinking in English 
 	- Generating the description content in English 
 	- Transalating that description to Vietnamese 
@@ -53,15 +52,20 @@ def generate_product_description_with_ollama(row):
 	try:
 		
 		input_prompt = f"""
-			Hãy viết một đoạn mô tả sản phẩm chi tiết bằng tiếng Việt cho một loại đồ uống, dựa trên các thông tin sau:
-			- Tên sản phẩm: {row['product_name']}
-			- Danh mục: {row['category_name']}
-			- Giá bán: {row['product_unit_price']} VND
-			- Đánh giá: {row['product_overall_stars']}/5 ({row['product_total_ratings']} lượt đánh giá)
-			- Số lượng đã bán: {row['product_total_orders']} đơn
-			Mô tả cần hấp dẫn, rõ ràng và chuẩn SEO để đăng trên website bán hàng. Mô tả không bao gồm các thông tin mô tả được chỉ ra ở phía trên.
-			Phần mô tả không được chứa các kí tự đặc biệt. 
-		"""
+            Write a detailed product description ONLY in Vietnamese for this beverage:
+            Product name: {row['product_name']}
+            Category: {row['category_name']}
+            Price: {row['product_unit_price']} VND
+            Rating: {row['product_overall_stars']}/5 ({row['product_total_ratings']} reviews)
+            Units sold: {row['product_total_orders']} orders
+            
+            IMPORTANT RULES:
+            - Write ONLY in Vietnamese language
+            - Do NOT include the product information listed above
+            - The description must be engaging, clear, and SEO-friendly
+            - No special characters
+        """
+        
 		response = requests.post('http://localhost:11434/api/generate', 
 							   json={
 								   'model': 'llama3',
@@ -80,11 +84,11 @@ def generate_product_description_with_ollama(row):
 def update_product_dataset(input_file: str, output_file: str) -> pd.DataFrame: 
 	df = pd.read_csv(input_file)
 	cat_counters = {}
-	
+	print("Checkpoint")
 	if 'product_code' in df.columns:
 		df['product_code'] = df['product_code'].astype(str)
-  
-	for idx in range(len(df)):
+	df_test = df[:5]
+	for idx in range(len(df_test)):
 		web_name = df.at[idx, 'website_name']
 		cat_name = df.at[idx, 'category_name']
 		
@@ -105,7 +109,7 @@ def update_product_dataset(input_file: str, output_file: str) -> pd.DataFrame:
   
 		description = generate_product_description_with_ollama(df.loc[idx])
 		df.at[idx, 'product_description'] = str(description) if description is not None else ''
-		print(f"Product description: {df.at[idx, 'product_description']}")
+		print(df.at[idx, 'product_description'])
   
 	df['product_discount_percentage'] = generate_discount_percentage(len(df))
 
@@ -115,15 +119,15 @@ def update_product_dataset(input_file: str, output_file: str) -> pd.DataFrame:
 	df.to_csv(
 		output_file,
 		index=False,
-		# mode='a' if output_file_exists else 'w',
-		# header=not output_file_exists
+		mode='a' if output_file_exists else 'w',
+		header=not output_file_exists
 	)
 	
 	return df
  
-if __name__ == "__main__":
-	input_file = 'data/processed/drink_products.csv'
-	output_file = 'data/processed/drink_products_with_mock.csv'
-	df = update_product_dataset(input_file, output_file)
-	print(f"Total processed rows: {len(df)}")
-	print("Finish")
+# if __name__ == "__main__":
+# 	input_file = 'data/processed/drink_products.csv'
+# 	output_file = 'data/processed/drink_products_with_mock.csv'
+# 	df = update_product_dataset(input_file, output_file)
+# 	print(f"Total processed rows: {len(df)}")
+# 	print("Finish")

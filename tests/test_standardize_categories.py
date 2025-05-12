@@ -1,10 +1,10 @@
 import pandas as pd 
 from ops.transform.standardize_categories import standardize_category
-from utils.logging_config import setup_logging
+from config.logger_config import setup_logger
 
-logger = setup_logging()
+logger = setup_logger()
 
-df = pd.read_csv('data/raw/drink_products.csv')
+df = pd.read_csv('data/processed/drink_products.csv')
 df_transform = df.copy()
 
 # print(f"Unique categories in input: {df['original_category'].unique()}")

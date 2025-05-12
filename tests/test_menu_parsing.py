@@ -3,10 +3,10 @@ import os
 import pandas as pd
 import yaml
 from ops.extract.menus_crawling import scrape_website
-from utils.logging_config import setup_logging, load_config
+from config.logger_config import setup_logger, load_config
 
 results = {}
-logger = setup_logging()
+logger = setup_logger()
 config = load_config("webs_config.yml")
 
 def test_menu_parsing():

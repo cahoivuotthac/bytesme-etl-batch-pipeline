@@ -1,0 +1,12 @@
+input_directory: "data/raw"
+ouput_directory: "data/processed"
+file_pattern "*.csv"
+
+transforms:
+  - remove_duplicates 
+  - standardize_categories
+  - generate_mock_data 
+
+categories: 
+  input_column: "original_category"
+  output_column: "category_name"

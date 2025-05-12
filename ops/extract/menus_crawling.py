@@ -3,9 +3,9 @@ from urllib.error import HTTPError
 from urllib.parse import urljoin, urlparse
 from urllib.request import urlopen, Request
 from bs4 import BeautifulSoup
-from utils.logging_config import setup_logging, load_config
+from config.logger_config import setup_logger, load_config
 
-logger = setup_logging()
+logger = setup_logger()
 config = load_config("webs_config.yml")
 
 def is_parent_category(url_list, url):

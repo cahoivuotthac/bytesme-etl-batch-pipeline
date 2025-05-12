@@ -1,15 +1,15 @@
-product_name,product_url,website_name,original_category,product_image,product_image_type,product_image_name,product_code,product_description,product_unit_price,product_currency,product_discount_percentage,product_total_orders,product_stock_quantity,product_total_ratings,product_overall_stars
-Bánh Gạo Hàn Quốc,http://seorbingsu.vn/banh-gao-han-quoc,seorbingsu,Topping thêm,https://bizweb.dktcdn.net/100/484/515/products/banh-gao.png?v=1701328563470,1,Bánh Gạo Hàn Quốc,,,5000,₫,0.0,10,50,0,0.0
-Đậu Đỏ Hàn Quốc,http://seorbingsu.vn/dau-do-han-quoc,seorbingsu,Topping thêm,https://bizweb.dktcdn.net/100/484/515/products/dau-do.png?v=1701328533300,1,Đậu Đỏ Hàn Quốc,,,5000,₫,0.0,10,50,0,0.0
-Thạch Dâu Tây,http://seorbingsu.vn/thach-dau-tay,seorbingsu,Topping thêm,https://bizweb.dktcdn.net/100/484/515/products/thach-dau.png?v=1701335792797,1,Thạch Dâu Tây,,,5000,₫,0.0,10,50,0,0.0
-Thạch Đào,http://seorbingsu.vn/thach-dao,seorbingsu,Topping thêm,https://bizweb.dktcdn.net/100/484/515/products/thach-dao.png?v=1701328482760,1,Thạch Đào,,,5000,₫,0.0,10,50,0,0.0
-Hạnh Nhân Cắt Lát,http://seorbingsu.vn/hanh-nhan-cat-lat,seorbingsu,Topping thêm,https://bizweb.dktcdn.net/100/484/515/products/z4929210073249-0928daa8d30b01dec86632675989c1fa-removebg-preview.png?v=1701328461733,1,Hạnh Nhân Cắt Lát,,,5000,₫,0.0,10,50,0,0.0
-Socola Chip,http://seorbingsu.vn/socola-chip,seorbingsu,Topping thêm,https://bizweb.dktcdn.net/100/484/515/products/socola-chip.png?v=1701328411920,1,Socola Chip,,,5000,₫,0.0,10,50,0,0.0
-Bánh Orion,http://seorbingsu.vn/banh-orion,seorbingsu,Topping thêm,https://bizweb.dktcdn.net/100/484/515/products/bim.png?v=1701328382523,1,Bánh Orion,,,5000,₫,0.0,10,50,0,0.0
-Bim Bim Sò,http://seorbingsu.vn/bim-bim-so,seorbingsu,Topping thêm,https://bizweb.dktcdn.net/100/484/515/products/bim-bim.png?v=1701328347320,1,Bim Bim Sò,,,5000,₫,0.0,10,50,0,0.0
-Trân Châu Đường Đen,http://seorbingsu.vn/tran-chau-duong-den,seorbingsu,Topping thêm,https://bizweb.dktcdn.net/100/484/515/products/tran-chau.png?v=1701328320457,1,Trân Châu Đường Đen,,,5000,₫,0.0,10,50,0,0.0
-Thạch Dưa Lưới,http://seorbingsu.vn/thach-dua-luoi,seorbingsu,Topping thêm,https://bizweb.dktcdn.net/100/484/515/products/thach-dua-luoi.png?v=1701334333763,1,Thạch Dưa Lưới,,,5000,₫,0.0,10,50,0,0.0
-Thạch Truyền Thống,http://seorbingsu.vn/thach-truyen-thong,seorbingsu,Topping thêm,https://bizweb.dktcdn.net/100/484/515/products/thach-truyen-thong.png?v=1701328252603,1,Thạch Truyền Thống,,,5000,₫,0.0,10,50,0,0.0
-Thạch Đường Nâu,http://seorbingsu.vn/thach-duong-nau,seorbingsu,Topping thêm,https://bizweb.dktcdn.net/100/484/515/products/thach.png?v=1701328228337,1,Thạch Đường Nâu,,,5000,₫,0.0,10,50,0,0.0
-Dưa Hấu Tươi,http://seorbingsu.vn/dua-hau-tuoi,seorbingsu,Topping thêm,https://bizweb.dktcdn.net/100/484/515/products/dua-hau.png?v=1701328183977,1,Dưa Hấu Tươi,,,5000,₫,0.0,10,50,0,0.0
-Xoài Tươi,http://seorbingsu.vn/xoai-tuoi,seorbingsu,Topping thêm,https://bizweb.dktcdn.net/100/484/515/products/xoai.png?v=1701328156330,1,Xoài Tươi,,,5000,₫,0.0,10,50,0,0.0
+product_name,product_url,product_brand,original_category,product_image,product_image_type,product_image_name,product_code,product_description,product_unit_price,product_currency,product_discount_percentage,product_total_orders,product_stock_quantity,product_total_ratings,product_overall_stars
+Bánh Gạo Hàn Quốc,http://seorbingsu.vn/banh-gao-han-quoc,seorbingsu,Topping thêm,https://bizweb.dktcdn.net/100/484/515/products/banh-gao.png?v=1701328563470,1,Bánh Gạo Hàn Quốc,,,5000,₫,0,10,50,0,0
+Đậu Đỏ Hàn Quốc,http://seorbingsu.vn/dau-do-han-quoc,seorbingsu,Topping thêm,https://bizweb.dktcdn.net/100/484/515/products/dau-do.png?v=1701328533300,1,Đậu Đỏ Hàn Quốc,,,5000,₫,0,10,50,0,0
+Thạch Dâu Tây,http://seorbingsu.vn/thach-dau-tay,seorbingsu,Topping thêm,https://bizweb.dktcdn.net/100/484/515/products/thach-dau.png?v=1701335792797,1,Thạch Dâu Tây,,,5000,₫,0,10,50,0,0
+Thạch Đào,http://seorbingsu.vn/thach-dao,seorbingsu,Topping thêm,https://bizweb.dktcdn.net/100/484/515/products/thach-dao.png?v=1701328482760,1,Thạch Đào,,,5000,₫,0,10,50,0,0
+Hạnh Nhân Cắt Lát,http://seorbingsu.vn/hanh-nhan-cat-lat,seorbingsu,Topping thêm,https://bizweb.dktcdn.net/100/484/515/products/z4929210073249-0928daa8d30b01dec86632675989c1fa-removebg-preview.png?v=1701328461733,1,Hạnh Nhân Cắt Lát,,,5000,₫,0,10,50,0,0
+Socola Chip,http://seorbingsu.vn/socola-chip,seorbingsu,Topping thêm,https://bizweb.dktcdn.net/100/484/515/products/socola-chip.png?v=1701328411920,1,Socola Chip,,,5000,₫,0,10,50,0,0
+Bánh Orion,http://seorbingsu.vn/banh-orion,seorbingsu,Topping thêm,https://bizweb.dktcdn.net/100/484/515/products/bim.png?v=1701328382523,1,Bánh Orion,,,5000,₫,0,10,50,0,0
+Bim Bim Sò,http://seorbingsu.vn/bim-bim-so,seorbingsu,Topping thêm,https://bizweb.dktcdn.net/100/484/515/products/bim-bim.png?v=1701328347320,1,Bim Bim Sò,,,5000,₫,0,10,50,0,0
+Trân Châu Đường Đen,http://seorbingsu.vn/tran-chau-duong-den,seorbingsu,Topping thêm,https://bizweb.dktcdn.net/100/484/515/products/tran-chau.png?v=1701328320457,1,Trân Châu Đường Đen,,,5000,₫,0,10,50,0,0
+Thạch Dưa Lưới,http://seorbingsu.vn/thach-dua-luoi,seorbingsu,Topping thêm,https://bizweb.dktcdn.net/100/484/515/products/thach-dua-luoi.png?v=1701334333763,1,Thạch Dưa Lưới,,,5000,₫,0,10,50,0,0
+Thạch Truyền Thống,http://seorbingsu.vn/thach-truyen-thong,seorbingsu,Topping thêm,https://bizweb.dktcdn.net/100/484/515/products/thach-truyen-thong.png?v=1701328252603,1,Thạch Truyền Thống,,,5000,₫,0,10,50,0,0
+Thạch Đường Nâu,http://seorbingsu.vn/thach-duong-nau,seorbingsu,Topping thêm,https://bizweb.dktcdn.net/100/484/515/products/thach.png?v=1701328228337,1,Thạch Đường Nâu,,,5000,₫,0,10,50,0,0
+Dưa Hấu Tươi,http://seorbingsu.vn/dua-hau-tuoi,seorbingsu,Topping thêm,https://bizweb.dktcdn.net/100/484/515/products/dua-hau.png?v=1701328183977,1,Dưa Hấu Tươi,,,5000,₫,0,10,50,0,0
+Xoài Tươi,http://seorbingsu.vn/xoai-tuoi,seorbingsu,Topping thêm,https://bizweb.dktcdn.net/100/484/515/products/xoai.png?v=1701328156330,1,Xoài Tươi,,,5000,₫,0,10,50,0,0
