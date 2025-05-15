@@ -1,0 +1,21 @@
+product_id,category_id,product_code,product_name,product_description,product_band,product_discount_percentage,product_unit_price,product_total_orders,product_total_ratings,product_overall_stars,product_stock_quantity,created_at,updated_at
+1,1,,Bơ Sữa Phô Mai,,thecoffeehouse,0.0,55000,10,0,0.0,50,2025-05-15 21:22:05,2025-05-15 21:22:05
+2,1,,Dâu Phô Mai,,thecoffeehouse,0.0,55000,10,0,0.0,50,2025-05-15 21:22:05,2025-05-15 21:22:05
+3,2,,Trà Xanh Latte (Nóng),,thecoffeehouse,0.0,49000,10,0,0.0,50,2025-05-15 21:22:05,2025-05-15 21:22:05
+4,2,,Trà Xanh Đường Đen,,thecoffeehouse,0.0,55000,10,0,0.0,50,2025-05-15 21:22:05,2025-05-15 21:22:05
+5,2,,Trà Xanh Espresso Marble,,thecoffeehouse,0.0,49000,10,0,0.0,50,2025-05-15 21:22:05,2025-05-15 21:22:05
+6,2,,Trà Xanh Latte Sữa Yến Mạch,,thecoffeehouse,0.0,55000,10,0,0.0,50,2025-05-15 21:22:05,2025-05-15 21:22:05
+7,2,,Trà Xanh Latte,,thecoffeehouse,0.0,45000,10,0,0.0,50,2025-05-15 21:22:05,2025-05-15 21:22:05
+8,2,,Chocolate Đá,,thecoffeehouse,0.0,55000,10,0,0.0,50,2025-05-15 21:22:05,2025-05-15 21:22:05
+9,2,,Oolong Tứ Quý Sen,,thecoffeehouse,0.0,49000,10,0,0.0,50,2025-05-15 21:22:05,2025-05-15 21:22:05
+10,2,,Oolong Tứ Quý Dâu Trân Châu,,thecoffeehouse,0.0,49000,10,0,0.0,50,2025-05-15 21:22:05,2025-05-15 21:22:05
+11,2,,Oolong Tứ Quý Kim Quất Trân Châu,,thecoffeehouse,0.0,49000,10,0,0.0,50,2025-05-15 21:22:05,2025-05-15 21:22:05
+12,2,,Oolong Tứ Quý Vải,,thecoffeehouse,0.0,49000,10,0,0.0,50,2025-05-15 21:22:05,2025-05-15 21:22:05
+13,3,,Chocolate Đá,,thecoffeehouse,0.0,55000,10,0,0.0,50,2025-05-15 21:22:05,2025-05-15 21:22:05
+14,3,,Chocolate Nóng,,thecoffeehouse,0.0,55000,10,0,0.0,50,2025-05-15 21:22:05,2025-05-15 21:22:05
+15,4,,A-Mê Classic,,thecoffeehouse,0.0,39000,10,0,0.0,50,2025-05-15 21:22:05,2025-05-15 21:22:05
+16,4,,A-Mê Mơ,,thecoffeehouse,0.0,45000,10,0,0.0,50,2025-05-15 21:22:05,2025-05-15 21:22:05
+17,4,,A-Mê Quất,,thecoffeehouse,0.0,49000,10,0,0.0,50,2025-05-15 21:22:05,2025-05-15 21:22:05
+18,4,,A-Mê Tuyết Đào,,thecoffeehouse,0.0,59000,10,0,0.0,50,2025-05-15 21:22:05,2025-05-15 21:22:05
+19,4,,A-Mê Tuyết Mơ,,thecoffeehouse,0.0,59000,10,0,0.0,50,2025-05-15 21:22:05,2025-05-15 21:22:05
+20,4,,A-Mê Tuyết Quất,,thecoffeehouse,0.0,59000,10,0,0.0,50,2025-05-15 21:22:05,2025-05-15 21:22:05

@@ -6,3 +6,4 @@ html5lib
 webdriver-manager
 pyyaml 
 pandas
+psycopg2-binary==2.9.10

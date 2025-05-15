@@ -1,22 +1,21 @@
+import json
+import logging
 import os
 import time
 import pandas as pd
-from config.logger_config import setup_logger
 import numpy as np 
 import requests
-from dotenv import load_dotenv
 
-load_dotenv()
+logger = logging.getLogger(__name__)
 
-def generate_product_code(website_name: str, product_cat: str, iter: int) -> str:
-	brand = website_name[:2].upper()
+def _generate_product_code(product_brand: str, product_cat: str, iter: int) -> str:
+	brand = product_brand[:2].upper()
 	cat = product_cat[:2].upper()
  
 	product_code = f"{brand}-{cat}-{str(iter + 1).zfill(3)}"
-	
 	return product_code
                        
-def generate_discount_percentage(num_products: int) -> int:
+def _generate_discount_percentage(num_products: int) -> int:
 	discount_prob = 0.3
 	has_discount = np.random.rand(num_products) < discount_prob
 	
@@ -26,42 +25,39 @@ def generate_discount_percentage(num_products: int) -> int:
 		0
 	)   
 
-def generate_total_ratings() -> int: 
+def _generate_total_ratings() -> int: 
     # most products have relatively few ratings, but some popular ones have many
     # using a power-law-like distribution
 	return int(np.random.exponential(scale=50)) + 1 
 
-def generate_overall_stars() -> float:
+def _generate_overall_stars() -> float:
     # using beta distribution skewed toward higher values (most products 3.5+ stars)
 	return round(np.random.beta(4, 1.5) * 4 + 1, 1)
 
-def generate_total_orders() -> int: 
+DEFAULT_BASE_PRICE = 50000
+
+def _generate_total_orders() -> int: 
     return np.random.randint(0, 500)
 
-def generate_product_description_with_ollama(row):
+def _generate_product_description_with_ollama(row):
 	# First install Ollama: https://ollama.com/
 	# Then run: ollama pull <model_name>
-	
-	"""
-	The extract process:
-	- Internally thinking in English 
-	- Generating the description content in English 
-	- Transalating that description to Vietnamese 
-	"""
-	
+
 	try:
 		
 		input_prompt = f"""
             Write a detailed product description ONLY in Vietnamese for this beverage:
             Product name: {row['product_name']}
             Category: {row['category_name']}
-            Price: {row['product_unit_price']} VND
             Rating: {row['product_overall_stars']}/5 ({row['product_total_ratings']} reviews)
             Units sold: {row['product_total_orders']} orders
             
             IMPORTANT RULES:
             - Write ONLY in Vietnamese language
-            - Do NOT include the product information listed above
+			- Ensure don't inlcude typo in the description 
+            - Do NOT include the product information likes: product_overral_stars, product_total_ratings, product_total_orders
+            - IMPORTANT to generate product description following product category type
+			- Try to add more information about ingredients, flavors of the product 
             - The description must be engaging, clear, and SEO-friendly
             - No special characters
         """
@@ -71,7 +67,7 @@ def generate_product_description_with_ollama(row):
 								   'model': 'llama3',
 								   'prompt': input_prompt,
 								   'stream': False,
-           							'temperature': 0.9
+           							'temperature': 0.8 # level of creativity 
 							   })
 		
 		result = response.json()
@@ -80,54 +76,91 @@ def generate_product_description_with_ollama(row):
 	except Exception as e:
 		print(f"Error generating description for {row['product_name']} with Ollama: {e}")
 		return ""
-		
-def update_product_dataset(input_file: str, output_file: str) -> pd.DataFrame: 
-	df = pd.read_csv(input_file)
+
+def _generate_json_size_price(base_price: int, cate_name: str) -> json:
+	sizes = ['S', 'M', 'L']
+ 
+	additional_price = 5000
+	if cate_name == 'Cakes':
+		additional_price = 12000
+  
+	prices = [base_price + i * additional_price for i in range(len(sizes))]
+ 
+	return {
+		'product_sizes': '|'.join(sizes),
+		'product_prices': '|'.join(str(price) for price in prices) 
+	}
+
+def update_product_dataset(df: pd.DataFrame, output_file: str) -> pd.DataFrame: 
 	cat_counters = {}
 	print("Checkpoint")
 	if 'product_code' in df.columns:
 		df['product_code'] = df['product_code'].astype(str)
-	df_test = df[:5]
-	for idx in range(len(df_test)):
-		web_name = df.at[idx, 'website_name']
+
+	df['product_overall_stars'] = df['product_overall_stars'].astype(float)
+	df['product_unit_price'] = df['product_unit_price'].astype(object)
+ 
+	for idx in range(len(df)):
+		web_name = df.at[idx, 'product_brand']
 		cat_name = df.at[idx, 'category_name']
 		
 		if cat_name not in cat_counters:
 			cat_counters[cat_name] = 0
    
-		df.at[idx, 'product_code'] = generate_product_code(
-			website_name=web_name,
+		df.at[idx, 'product_code'] = _generate_product_code(
+			product_brand=web_name,
 			product_cat=cat_name,
 			iter=cat_counters[cat_name]
 		)
 
 		cat_counters[cat_name] += 1
 
-		df.at[idx, 'product_total_ratings'] = generate_total_ratings()
-		df.at[idx, 'product_overall_stars'] = generate_overall_stars()
-		df.at[idx, 'product_total_orders'] = generate_total_orders()
+		df.at[idx, 'product_total_ratings'] = _generate_total_ratings()
   
-		description = generate_product_description_with_ollama(df.loc[idx])
-		df.at[idx, 'product_description'] = str(description) if description is not None else ''
-		print(df.at[idx, 'product_description'])
+		df.at[idx, 'product_overall_stars'] = _generate_overall_stars()
+		df.at[idx, 'product_total_orders'] = _generate_total_orders()
+
+		processed_cols = ['Bingsu', 'Frosty', 'Tea', 'Chocolate & Cacao', 'Coffee',
+                    'Chilled & Cold', 'Cakes']
+		
+		cur_price = int(df.at[idx, 'product_unit_price'])
+		if cur_price == 0:
+			cur_price = DEFAULT_BASE_PRICE
+			logger.debug(f"Check current price: {cur_price}")
+   
+		cur_cate = df.at[idx, 'category_name'] 
   
-	df['product_discount_percentage'] = generate_discount_percentage(len(df))
+		if cur_cate in processed_cols:
+			df.at[idx, 'product_unit_price'] = _generate_json_size_price(cur_price, str(cur_cate))
+			logger.info(f"Check product price: {df.at[idx, 'product_unit_price']}")
+		else: 
+			if cur_price == 0:
+				logger.info("Checkpoint")
+				mock_price = np.random.randint(low = 55000, high=200000) 
+				df.at[idx, 'product_unit_price'] = {'product_price': str(mock_price)}
+				logger.info(f"Check product price: {df.at[idx, 'product_unit_price']}")	
+    
+		if pd.isna(df.at[idx, 'product_description']) or df.at[idx, 'product_description'] == '':
+			description = _generate_product_description_with_ollama(df.loc[idx])
+			df.at[idx, 'product_description'] = str(description) if description is not None else ''
+			logger.info(f"Check product description: {description}") 
+    
+	df['product_discount_percentage'] = _generate_discount_percentage(len(df))
 
 	os.makedirs('data/processed', exist_ok=True)
 	output_file_exists = os.path.isfile(output_file)
- 
+	# df = df.drop(columns=['Unnamed'])
 	df.to_csv(
 		output_file,
 		index=False,
-		mode='a' if output_file_exists else 'w',
-		header=not output_file_exists
-	)
+		mode='w',
+		# header=not output_file_exists
+	)	
 	
 	return df
- 
+
 # if __name__ == "__main__":
-# 	input_file = 'data/processed/drink_products.csv'
-# 	output_file = 'data/processed/drink_products_with_mock.csv'
-# 	df = update_product_dataset(input_file, output_file)
-# 	print(f"Total processed rows: {len(df)}")
-# 	print("Finish")
+#    input_df = pd.read_csv('data/staging/bingsu_products.csv')
+#    output = update_product_dataset(input_df, 'data/staging/bingsu_products.csv')
+   
+#    logger.info("Generating mock data succesfully") 

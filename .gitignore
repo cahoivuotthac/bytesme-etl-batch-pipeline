@@ -1,4 +1,5 @@
 env
 test
 logs
-src/corpora 
+src/corpora
+.env

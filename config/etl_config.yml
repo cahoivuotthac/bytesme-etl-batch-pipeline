@@ -1,12 +1,14 @@
 input_directory: "data/raw"
-ouput_directory: "data/processed"
-file_pattern "*.csv"
+output_directory: "data/staging"
+final_output_directory: "data/processed"
+file_pattern: "*.csv"
 
 transforms:
-  - remove_duplicates 
+  - remove_duplicates
   - standardize_categories
-  - generate_mock_data 
+  - generate_mock_data
+  # - seperate_tables
 
-categories: 
+categories:
   input_column: "original_category"
   output_column: "category_name"

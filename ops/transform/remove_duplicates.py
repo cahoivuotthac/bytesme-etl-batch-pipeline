@@ -1,15 +1,17 @@
+import logging
 import pandas as pd
-from config.logger_config import setup_logger
 
-logger = setup_logger()
+logger = logging.getLogger(__name__)
 
-def remove_duplicates(input_path: str, output_path: str):
-	df = pd.read_csv(input_path)
+def remove_duplicates(df: pd.DataFrame) -> pd.DataFrame:
+	key_cols = ['product_name', 'product_url']
+	df_unique = df.drop_duplicates(subset=key_cols, keep='first')
 	
-	unique_df = df.drop_duplicates()
+	logger.info(f"Removed {len(df) - len(df_unique)} duplicate records")
 	
-	unique_df.to_csv(output_path, index=False)
-	
-	logger.info(f"Removed {len(df) - len(unique_df)} duplicate records")
-	
-# remove_duplicates('data/raw/drink_products.csv', 'data/processed/drink_products.csv')	
+	return df_unique
+
+# if __name__ == '__main__':
+# 	df = pd.read_csv('data/raw/bingsu_products.csv')
+# 	df = remove_duplicates(df)
+# 	df.to_csv('data/staging/bingsu_products.csv')

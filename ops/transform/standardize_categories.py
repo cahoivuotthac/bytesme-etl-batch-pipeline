@@ -1,8 +1,11 @@
 
+import logging
 from typing import List
 import re
 
 import pandas as pd
+
+logger = logging.getLogger(__name__)
 
 CATEGORIES_MAPPING = {
     'Cakes': ['cakes', 'dry cakes', 'cake slices', 'bánh kem bơ', 'bánh flan gato' 
@@ -27,7 +30,9 @@ CATEGORIES_MAPPING = {
     
     'Chocolate & Cacao': ['chocolate-1'],
     
-    'Frosty': ['trai-cay-xay-0-c', 'da-xay-frosty-1']
+    'Frosty': ['trai-cay-xay-0-c', 'da-xay-frosty-1'],
+    'Bingsu': 'Bingsu',
+    'Topping thêm': 'Topping thêm'
 }
 
 def standardize_category(df_products_name_cate: pd.DataFrame) -> List[str]:

@@ -18,8 +18,8 @@ def print_duplicate_lines(filepath):
                 lines.append(line)
     return duplicate_lines, header
 
-src_filepath = 'data/test/cake_products.csv'
-des_filepath = 'data/test/duplicate_products.csv'
+src_filepath = 'data/raw/drink_products.csv'
+des_filepath = 'data/staging/drink_products.csv' 
 duplicate_lines, header = print_duplicate_lines(src_filepath)
 if duplicate_lines and header:
     df = pd.DataFrame(data=duplicate_lines, columns=header)

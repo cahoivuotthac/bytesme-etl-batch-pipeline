@@ -1,5 +1,6 @@
 import logging
 import os
+import requests
 import yaml
 
 from selenium import webdriver
@@ -18,16 +19,6 @@ def setup_logger(log_name='scraping.log'):
 	)
 	
 	return logging.getLogger()
-
-def load_config(path):
-	base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-	config_dir_name = os.path.basename(os.path.dirname(os.path.abspath(__file__)))
-	config_path = os.path.join(base_dir, config_dir_name, path)
-	
-	with open(config_path, 'r') as f: 
-		config = yaml.safe_load(f)
-	
-	return config
 
 def setup_selenium(user_agent: str) -> ChromeDriverManager:
 	options = Options()
@@ -56,3 +47,34 @@ def setup_selenium(user_agent: str) -> ChromeDriverManager:
 	""")
  
 	return driver
+
+
+def setup_discord_notification(logger, webhook_url):
+	if not webhook_url:
+		# Try to get from environment variable
+		webhook_url = os.environ.get('DISCORD_WEBHOOK_URL')
+	
+	if not webhook_url:
+		logger.warning("No Discord webhook URL provided, notifications disabled")
+		return
+	
+	class DiscordWebhookHandler(logging.Handler):
+		def emit(self, record):
+			# Only send ERROR and higher severity
+			if record.levelno >= logging.ERROR:
+				log_entry = self.format(record)
+				payload = {
+					"content": f"⚠️ **ETL Pipeline Error**\n```\n{log_entry}\n```"
+				}
+				try:
+					requests.post(webhook_url, json=payload)
+				except Exception as e:
+					print(f"Failed to send Discord notification: {e}")
+	
+	discord_handler = DiscordWebhookHandler()
+	discord_handler.setLevel(logging.ERROR)
+	
+	formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+	discord_handler.setFormatter(formatter)
+  
+		
