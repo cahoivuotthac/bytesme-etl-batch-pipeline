@@ -158,9 +158,3 @@ def update_product_dataset(df: pd.DataFrame, output_file: str) -> pd.DataFrame:
 	)	
 	
 	return df
-
-# if __name__ == "__main__":
-#    input_df = pd.read_csv('data/staging/bingsu_products.csv')
-#    output = update_product_dataset(input_df, 'data/staging/bingsu_products.csv')
-   
-#    logger.info("Generating mock data succesfully") 
