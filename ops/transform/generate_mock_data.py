@@ -41,33 +41,20 @@ def _generate_total_orders() -> int:
 
 def _generate_product_description_with_ollama(row):
 	# First install Ollama: https://ollama.com/
-	# Then run: ollama pull <model_name>
+	# Then run: ollama pull <model_name> 
 
 	try:
 		
 		input_prompt = f"""
-            Write a detailed product description ONLY in Vietnamese for this beverage:
-            Product name: {row['product_name']}
-            Category: {row['category_name']}
-            Rating: {row['product_overall_stars']}/5 ({row['product_total_ratings']} reviews)
-            Units sold: {row['product_total_orders']} orders
-            
-            IMPORTANT RULES:
-            - Write ONLY in Vietnamese language
-			- Ensure don't inlcude typo in the description 
-            - Do NOT include the product information likes: product_overral_stars, product_total_ratings, product_total_orders
-            - IMPORTANT to generate product description following product category type
-			- Try to add more information about ingredients, flavors of the product 
-            - The description must be engaging, clear, and SEO-friendly
-            - No special characters
-        """
-        
+			Viết mô tả ngắn gọn về sản phẩm topping ăn kèm với các món ngọt khác có tên {row['product_name']}  
+			
+		"""
 		response = requests.post('http://localhost:11434/api/generate', 
 							   json={
-								   'model': 'llama3',
+								   'model': 'mrjacktung/phogpt-4b-chat-gguf',
 								   'prompt': input_prompt,
 								   'stream': False,
-           							'temperature': 0.8 # level of creativity 
+           							# 'temperature': 0.8 # level of creativity 
 							   })
 		
 		result = response.json()
@@ -140,14 +127,14 @@ def update_product_dataset(df: pd.DataFrame, output_file: str) -> pd.DataFrame:
 				df.at[idx, 'product_unit_price'] = {'product_price': str(mock_price)}
 				logger.info(f"Check product price: {df.at[idx, 'product_unit_price']}")	
     
-		if pd.isna(df.at[idx, 'product_description']) or df.at[idx, 'product_description'] == '':
-			description = _generate_product_description_with_ollama(df.loc[idx])
-			df.at[idx, 'product_description'] = str(description) if description is not None else ''
-			logger.info(f"Check product description: {description}") 
+		# if pd.isna(df.at[idx, 'product_description']) or df.at[idx, 'product_description'] == '':
+		# 	description = _generate_product_description_with_ollama(df.loc[idx])
+		# 	df.at[idx, 'product_description'] = str(description) if description is not None else ''
+		# 	logger.info(f"Check product description: {description}") 
     
 	df['product_discount_percentage'] = _generate_discount_percentage(len(df))
 
-	os.makedirs('data/processed', exist_ok=True)
+	os.makedirs('data/staging', exist_ok=True)
 	output_file_exists = os.path.isfile(output_file)
 	# df = df.drop(columns=['Unnamed'])
 	df.to_csv(
@@ -158,3 +145,6 @@ def update_product_dataset(df: pd.DataFrame, output_file: str) -> pd.DataFrame:
 	)	
 	
 	return df
+
+df = pd.read_csv('data/staging/topping_products.csv')
+df_new = update_product_dataset(df, "data/staging/topping_products.csv")

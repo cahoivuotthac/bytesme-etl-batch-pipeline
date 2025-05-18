@@ -6,10 +6,10 @@ DROP TABLE IF EXISTS app_data.categories CASCADE;
 
 CREATE TABLE app_data.categories (
   category_id SERIAL PRIMARY KEY,
-  name VARCHAR(50),
-  background_url VARCHAR(255),
-  type INT,
-  description TEXT,
+  category_name VARCHAR(50),
+  category_background_url VARCHAR(255),
+  category_type INT,
+  category_description TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -17,16 +17,16 @@ CREATE TABLE app_data.categories (
 CREATE TABLE app_data.products (
   product_id SERIAL PRIMARY KEY,
   category_id INT REFERENCES app_data.categories(category_id),
-  code VARCHAR(10),
-  name VARCHAR(50) UNIQUE NOT NULL,
-  description TEXT,
-  brand VARCHAR(50),
-  discount_percentage INT DEFAULT 0,
-  unit_price JSON,
-  total_orders INT DEFAULT 0,
-  total_ratings INT DEFAULT 0,
-  overall_stars REAL,
-  stock_quantity INT DEFAULT 0,
+  product_code VARCHAR(10),
+  product_name VARCHAR(200) NOT NULL,
+  product_description TEXT,
+  product_brand VARCHAR(50),
+  product_discount_percentage NUMERIC DEFAULT 0,
+  product_unit_price JSON,
+  product_total_orders INT DEFAULT 0,
+  product_total_ratings INT DEFAULT 0,
+  product_overall_stars REAL,
+  product_stock_quantity INT DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -34,9 +34,9 @@ CREATE TABLE app_data.products (
 CREATE TABLE app_data.product_images (
   product_image_id SERIAL PRIMARY KEY,
   product_id INT REFERENCES app_data.products(product_id),
-  image_name VARCHAR(100),
-  image_url VARCHAR(255),
-  image_type SMALLINT,
+  product_image_url VARCHAR(500),
+  product_image_name VARCHAR(255),
+  product_image_type SMALLINT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

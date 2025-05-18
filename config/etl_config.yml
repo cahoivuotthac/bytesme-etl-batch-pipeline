@@ -4,10 +4,10 @@ final_output_directory: "data/processed"
 file_pattern: "*.csv"
 
 transforms:
-  - remove_duplicates
-  - standardize_categories
-  - generate_mock_data
-  # - seperate_tables
+  # - remove_duplicates
+  # - standardize_categories
+  # - generate_mock_data
+  - seperate_tables
 
 categories:
   input_column: "original_category"

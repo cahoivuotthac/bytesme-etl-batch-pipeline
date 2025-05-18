@@ -1,20 +1,128 @@
-Unnamed: 0,product_name,product_url,product_brand,product_image,product_image_type,product_image_name,product_code,product_description,product_unit_price,product_currency,product_discount_percentage,product_total_orders,product_stock_quantity,product_total_ratings,product_overall_stars,category_name
-0,Bơ Sữa Phô Mai,https://thecoffeehouse.com/products/bo-sua-pho-mai,thecoffeehouse,http://product.hstatic.net/1000075078/product/1737355134_tcx-bo_d57bb98275564b72abf162875957dc01_grande.png,1,bơ sữa phô mai,,,55000,₫,0,10,50,0,0,Frosty
-1,Dâu Phô Mai,https://thecoffeehouse.com/products/dau-pho-mai,thecoffeehouse,http://product.hstatic.net/1000075078/product/1737355127_tcx-dau_5db0bc95499642c88a362cc821654d74_grande.png,1,dâu phô mai,,,55000,₫,0,10,50,0,0,Frosty
-2,Trà Xanh Latte (Nóng),https://thecoffeehouse.com/products/tra-xanh-latte-nong,thecoffeehouse,http://product.hstatic.net/1000075078/product/1737355604_tx-latte-nong_0a2a3d877a184569a96a87f876312393_grande.png,1,trà xanh latte (nóng),,,49000,₫,0,10,50,0,0,Tea
-3,Trà Xanh Đường Đen,https://thecoffeehouse.com/products/tra-xanh-duong-den,thecoffeehouse,http://product.hstatic.net/1000075078/product/1737355592_tx-duong-den_8803dd180d564dc9ac6024e019c8234b_grande.png,1,trà xanh đường đen,,,55000,₫,0,10,50,0,0,Tea
-4,Trà Xanh Espresso Marble,https://thecoffeehouse.com/products/tra-xanh-espresso-marble,thecoffeehouse,http://product.hstatic.net/1000075078/product/1737355620_tx-espresso-marble_d88cb1610a8b45668d53e0bc88b3cc2b_grande.png,1,trà xanh espresso marble,,,49000,₫,0,10,50,0,0,Tea
-5,Trà Xanh Latte Sữa Yến Mạch,https://thecoffeehouse.com/products/tra-xanh-latte-sua-yen-mach,thecoffeehouse,http://product.hstatic.net/1000075078/product/1737355652_tx-latte-sym_5e8e85e4e645417e91a50857e1fa900e_grande.png,1,trà xanh latte sữa yến mạch,,,55000,₫,0,10,50,0,0,Tea
-6,Trà Xanh Latte,https://thecoffeehouse.com/products/tra-xanh-latte,thecoffeehouse,http://product.hstatic.net/1000075078/product/1737355612_tx-latte_3bc7e129c7a64995bcdfed2f8e4ef380_grande.png,1,trà xanh latte,,,45000,₫,0,10,50,0,0,Tea
-7,Chocolate Đá,https://thecoffeehouse.com/products/chocolate-da,thecoffeehouse,http://product.hstatic.net/1000075078/product/1737355560_chocolate-da_9d2569bdbea84fd5829abb1b9dedc709_grande.png,1,chocolate đá,,,55000,₫,0,10,50,0,0,Tea
-8,Oolong Tứ Quý Sen,https://thecoffeehouse.com/products/oolong-tu-quy-sen,thecoffeehouse,http://product.hstatic.net/1000075078/product/1737356345_oolong-sen_0bbcc5560e2e4d599f82a0b152bcc222_grande.png,1,oolong tứ quý sen,,,49000,₫,0,10,50,0,0,Tea
-9,Oolong Tứ Quý Dâu Trân Châu,https://thecoffeehouse.com/products/oolong-tu-quy-dau-tran-chau,thecoffeehouse,http://product.hstatic.net/1000075078/product/1737356372_oolong-tu-quy-dau_ead67903b9004084a0cee99e33312d57_grande.png,1,oolong tứ quý dâu trân châu,,,49000,₫,0,10,50,0,0,Tea
-10,Oolong Tứ Quý Kim Quất Trân Châu,https://thecoffeehouse.com/products/oolong-tu-quy-kim-quat-tran-chau,thecoffeehouse,http://product.hstatic.net/1000075078/product/1737356364_oolong-kim-quat-tran-chau_868486a049ba4e88a88be43abf6cf5fc_grande.png,1,oolong tứ quý kim quất trân châu,,,49000,₫,0,10,50,0,0,Tea
-11,Oolong Tứ Quý Vải,https://thecoffeehouse.com/products/oolong-tu-quy-vai,thecoffeehouse,http://product.hstatic.net/1000075078/product/1737356353_oolong-tu-quy-vai_56ba32db39ca48f986e716d1a2a8c447_grande.png,1,oolong tứ quý vải,,,49000,₫,0,10,50,0,0,Tea
-13,Chocolate Nóng,https://thecoffeehouse.com/products/chocolate-nong,thecoffeehouse,http://product.hstatic.net/1000075078/product/1737355571_chocolate-nong_422eb78454814a0c9f79ac8805449244_grande.png,1,chocolate nóng,,,55000,₫,0,10,50,0,0,Chocolate & Cacao
-14,A-Mê Classic,https://thecoffeehouse.com/products/a-me-classic,thecoffeehouse,http://product.hstatic.net/1000075078/product/1744032449_1737354959-ame-classic-400x400_fd01b10cd5874ffabf786bef742b9acf_grande.png,1,a-mê classic,,,39000,₫,0,10,50,0,0,Coffee
-15,A-Mê Mơ,https://thecoffeehouse.com/products/a-me-mo,thecoffeehouse,http://product.hstatic.net/1000075078/product/1744032263_1737355001-ame-mo-400x400_d227031b24e94845bd7c203b60193ea9_grande.png,1,a-mê mơ,,,45000,₫,0,10,50,0,0,Coffee
-16,A-Mê Quất,https://thecoffeehouse.com/products/a-me-quat,thecoffeehouse,http://product.hstatic.net/1000075078/product/1744032124_1737355011-ame-quat-400x400_247f133ec3764de38992089eb89161b0_grande.png,1,a-mê quất,,,49000,₫,0,10,50,0,0,Coffee
-17,A-Mê Tuyết Đào,https://thecoffeehouse.com/products/a-me-tuyet-dao,thecoffeehouse,http://product.hstatic.net/1000075078/product/1744031998_1737355030-ame-tuyet-dao-400x400_6d1748248f2b48c1ae4bf124fe9e16b0_grande.png,1,a-mê tuyết đào,,,59000,₫,0,10,50,0,0,Coffee
-18,A-Mê Tuyết Mơ,https://thecoffeehouse.com/products/a-me-tuyet-mo,thecoffeehouse,http://product.hstatic.net/1000075078/product/1744031902_1737355037-ame-tuyet-mo-400x400_ab440cb323ab4866b141e0e43adf0fc2_grande.png,1,a-mê tuyết mơ,,,59000,₫,0,10,50,0,0,Coffee
-19,A-Mê Tuyết Quất,https://thecoffeehouse.com/products/a-me-tuyet-quat,thecoffeehouse,http://product.hstatic.net/1000075078/product/1744031754_1737355048-ame-tuyet-quat-400x400_ff4eff1fc1d4474ca1804976bfef9b62_grande.png,1,a-mê tuyết quất,,,59000,₫,0,10,50,0,0,Coffee
+product_name,product_url,product_brand,product_image_url,product_image_type,product_image_name,product_code,product_description,product_unit_price,product_currency,product_discount_percentage,product_total_orders,product_stock_quantity,product_total_ratings,product_overall_stars,category_name
+Bơ Sữa Phô Mai,https://thecoffeehouse.com/products/bo-sua-pho-mai,thecoffeehouse,http://product.hstatic.net/1000075078/product/1737355134_tcx-bo_d57bb98275564b72abf162875957dc01_grande.png,1,bơ sữa phô mai,TH-FR-001,"Món đồ uống lạnh Bơ Sữa Phô Mai là một trải nghiệm giải khát hoàn hảo trong những ngày hè nóng bỏng. Màu xanh lá tươi và hương thơm của sữa bò sẽ mang lại cảm giác thư giãn, làm cho bạn cảm thấy như đang được thưởng thức tại một quán cafe riêng.
+
+Nước giải khát này có độ béo mịn đến từ việc kết hợp giữa sữa bò tươi và kem, tạo ra một vị ngon ngọt ngào. Bạn sẽ khó có thể cưỡng lại hương thơm của nó, khiến bạn phải đổ thêm một ly nữa.
+
+Đặc biệt, Bơ Sữa Phô Mai được sản xuất với công nghệ hiện đại, đảm bảo chất lượng cao nhất cho người tiêu dùng. Món đồ uống này phù hợp với tất cả mọi người, từ những người yêu thích đồ uống lạnh đến những người đang tìm kiếm một món giải khát ngon và lành.
+
+Tóm lại, Bơ Sữa Phô Mai là một món đồ uống lạnh hoàn hảo cho những ngày hè nóng bỏng. Cùng thưởng thức hương thơm ngào ngạt và độ béo mịn của nó!","{'product_sizes': 'S|M|L', 'product_prices': '55000|60000|65000'}",₫,0,477,50,8,2.3,Frosty
+Dâu Phô Mai,https://thecoffeehouse.com/products/dau-pho-mai,thecoffeehouse,http://product.hstatic.net/1000075078/product/1737355127_tcx-dau_5db0bc95499642c88a362cc821654d74_grande.png,1,dâu phô mai,TH-FR-002,"Món đồ uống Dâu Phô Mai là một sự kết hợp hoàn hảo giữa vị ngon của dâu và hương thơm của phô mai. Đồ uống này được chế biến với công thức riêng biệt để mang lại trải nghiệm tuyệt vời cho người thưởng.
+
+Khi mở chai, bạn sẽ ngửi thấy mùi phô mai tươi và ngọt ngào, đánh dấu màn hình đầu tiên trong hành trình thưởng thức. Sau đó, vị ngon của dâu sẽ được hiện ra, pha trộn cùng hương phô mai để tạo thành một cốc đồ uống vô cùng tuyệt vời.
+
+Dâu Phô Mai là lựa chọn hoàn hảo cho những ngày hè nóng bỏng, khi bạn cần một cốc đồ uống mát và thơm ngào. Với giá chỉ 55000-65000 VND, Dâu Phô Mai là món đồ uống kinh tế và lý tưởng cho cả gia đình.","{'product_sizes': 'S|M|L', 'product_prices': '55000|60000|65000'}",₫,0,468,50,27,4.8,Frosty
+Trà Xanh Latte (Nóng),https://thecoffeehouse.com/products/tra-xanh-latte-nong,thecoffeehouse,http://product.hstatic.net/1000075078/product/1737355604_tx-latte-nong_0a2a3d877a184569a96a87f876312393_grande.png,1,trà xanh latte (nóng),TH-TE-001,"Món đồ uống Trà Xanh Latte Nóng là sự kết hợp giữa trà xanh tươi và sữa, mang lại một hương vị đặc biệt và nóng bỏng. Màu sắc vàng óng của sản phẩm sẽ ngay lập tức hấp dẫn bạn.
+
+Nước trà được pha trộn với sữa trong liều lượng vừa phải, tạo ra một hỗn hợp sánh mịt và thơm ngon. Cốt trà xanh được khai thác triệt để, mang lại một mùi hương nhẹ nhàng và tươi mát.
+
+Khi uống Trà Xanh Latte Nóng, bạn sẽ cảm nhận ngay hương vị của trà xanh, kết hợp với độ nóng bỏng của sữa. Sản phẩm này đặc biệt phù hợp cho những người yêu thích đồ uống ấm áp và thơm ngon.
+
+Trà Xanh Latte Nóng là lựa chọn tuyệt vời cho các ngày đông lạnh hoặc cho những người đang tìm kiếm một món đồ uống mới để thay đổi khẩu vị. Cùng trải nghiệm hương vị Trà Xanh Latte Nóng ngay hôm nay!","{'product_sizes': 'S|M|L', 'product_prices': '49000|54000|59000'}",₫,46,341,50,73,3.4,Tea
+Trà Xanh Đường Đen,https://thecoffeehouse.com/products/tra-xanh-duong-den,thecoffeehouse,http://product.hstatic.net/1000075078/product/1737355592_tx-duong-den_8803dd180d564dc9ac6024e019c8234b_grande.png,1,trà xanh đường đen,TH-TE-002,"Món trà Trà Xanh Đường Đen là một loại trà được pha trộn với đường đen, tạo ra một hương vị thơm ngon và ngọt ngào. Khi bạn uống, bạn sẽ cảm nhận được hương vị của trà xanh tươi mới cùng với dư vị của đường đen, làm cho miệng bạn cảm thấy sạch sẽ và giải khát.
+
+Trà này có thể dùng để thư giãn sau khi ăn, hoặc là món trà iced ngon để thưởng thức vào những ngày hè nóng bức. Bạn cũng có thể thêm chút sữa hay kem để tăng thêm hương vị và bớt bớt độ đắng của trà.
+
+Món trà Trà Xanh Đường Đen là một lựa chọn tuyệt vời cho những người yêu thích trà xanh và muốn tìm kiếm một loại trà mới, lạ. Cùng trải nghiệm món trà này và hãy chia sẻ cảm nhận của bạn với chúng tôi!","{'product_sizes': 'S|M|L', 'product_prices': '55000|60000|65000'}",₫,7,56,50,25,2.6,Tea
+Trà Xanh Espresso Marble,https://thecoffeehouse.com/products/tra-xanh-espresso-marble,thecoffeehouse,http://product.hstatic.net/1000075078/product/1737355620_tx-espresso-marble_d88cb1610a8b45668d53e0bc88b3cc2b_grande.png,1,trà xanh espresso marble,TH-TE-003,"Trà Xanh Espresso Marble - một trải nghiệm hương vị tuyệt vời cho những người yêu trà!
+
+Dòng sản phẩm này mang lại sự kết hợp hoàn hảo giữa vị đậm của espresso và hương thơm tươi mát của trà xanh, tạo ra một thức uống mới lạ và kích thích.
+
+Cái ly Trà Xanh Espresso Marble được chế biến với công thức đặc biệt, pha trộn tinh tế giữa chất lượng trà xanh tự nhiên và cà phê espresso. Mọi người sẽ bị cuốn hút bởi hương vị độc đáo, vừa có thể sảng khoái lại vừa có thể thư giãn.
+
+Trà Xanh Espresso Marble là lựa chọn tuyệt vời cho những ai yêu thích trà nhưng cũng muốn thử trải nghiệm của cà phê. Cùng với hương vị thơm ngon, sản phẩm này còn được thiết kế trong chai ly tinh tế và đẹp mắt, giúp bạn có thể thưởng thức một cách thoải mái.
+
+Mọi người đã đánh giá cao Trà Xanh Espresso Marble với điểm số 4,4/5 trên 42 đánh giá, chứng tỏ sản phẩm này thực sự là một lựa chọn tuyệt vời cho những ai yêu thích trà.","{'product_sizes': 'S|M|L', 'product_prices': '49000|54000|59000'}",₫,20,260,50,42,4.4,Tea
+Trà Xanh Latte Sữa Yến Mạch,https://thecoffeehouse.com/products/tra-xanh-latte-sua-yen-mach,thecoffeehouse,http://product.hstatic.net/1000075078/product/1737355652_tx-latte-sym_5e8e85e4e645417e91a50857e1fa900e_grande.png,1,trà xanh latte sữa yến mạch,TH-TE-004,"Món đồ uống Trà Xanh Latte Sữa Yến Mạch - sự kết hợp hoàn hảo giữa hương vị trà xanh tươi và sữa yến mạch creamy. Khi bạn cầm ly này, tức khắc cảm nhận được sự thư giãn và thoải mái sau một ngày dài làm việc.
+
+Hương vị trà xanh tươi được lấy từ những lá trà xanh được trồng trên núi cao, đảm bảo rằng độ tinh khiết của trà xanh được giữ nguyên. Sữa yến mạch creamy được chế biến theo công thức đặc biệt, mang lại độ mịn và mềm cho sản phẩm.
+
+Sở dĩ Trà Xanh Latte Sữa Yến Mạch được yêu thích đến thế là vì hương vị của nó quá tuyệt vời. Hương trà xanh tươi được pha trộn với sữa yến mạch creamy tạo nên một hương vị độc đáo, mang lại cảm giác thư giãn và thoải mái cho người uống.
+
+Ngay khi bạn thưởng thức Trà Xanh Latte Sữa Yến Mạch, bạn sẽ ngay lập tức cảm nhận được sự thay đổi về thể chất và tinh thần. Cảm xúc của bạn sẽ trở nên trân trọng hơn, và tinh thần sẽ được nuôi dưỡng.
+
+Tóm lại, Trà Xanh Latte Sữa Yến Mạch là một món đồ uống tuyệt vời cho những ai yêu trà xanh và muốn thư giãn sau một ngày dài làm việc. Đừng bỏ qua cơ hội để thưởng thức hương vị đặc biệt này!","{'product_sizes': 'S|M|L', 'product_prices': '55000|60000|65000'}",₫,0,174,50,33,2.9,Tea
+Trà Xanh Latte,https://thecoffeehouse.com/products/tra-xanh-latte,thecoffeehouse,http://product.hstatic.net/1000075078/product/1737355612_tx-latte_3bc7e129c7a64995bcdfed2f8e4ef380_grande.png,1,trà xanh latte,TH-TE-005,"Món trà xanh latte thơm ngon của chúng tôi sẽ đưa bạn vào một thế giới mới. Trà xanh được chọn lựa kỹ lưỡng và pha trộn với sữa tươi để tạo ra một hương vị ngọt ngào, mát mẻ. Khi thưởng thức, bạn sẽ cảm nhận được vị trà xanh nguyên chất, cùng với hơi ẩm của sữa, mang lại cho bạn một giây phút thư giãn hoàn hảo.
+
+Vì sao trà xanh latte lại là món uống yêu thích của nhiều người? Bởi vì hương vị thơm ngon, tươi mới và dễ uống. Không chỉ thế, trà xanh còn có tác dụng tốt cho sức khỏe, giúp giảm stress và cải thiện tâm trạng.
+
+Chúng tôi tin rằng mỗi cốc trà xanh latte sẽ mang lại cho bạn một giây phút hạnh phúc. Vì vậy, hãy cùng thưởng thức và cảm nhận hương vị tuyệt vời của chúng tôi.","{'product_sizes': 'S|M|L', 'product_prices': '45000|50000|55000'}",₫,0,261,50,111,2.9,Tea
+Chocolate Đá,https://thecoffeehouse.com/products/chocolate-da,thecoffeehouse,http://product.hstatic.net/1000075078/product/1737355560_chocolate-da_9d2569bdbea84fd5829abb1b9dedc709_grande.png,1,chocolate đá,TH-TE-006,"Món trà Chocolate Đá là một trải nghiệm ẩm thực hoàn hảo cho những người yêu thích hương vị chocolate và đồ uống giải khát. Trà được pha trộn với tinh chất chocolate đậm, tạo nên một hương thơm cuốn hút và vị ngọt ngào. Khi thưởng thức, bạn sẽ cảm thấy như đang được chào đón bởi một ngày hè nắng ấm.
+
+Trong mỗi ly trà, bạn có thể cảm nhận được những notes của chocolate sô cô la, hòa quyện với hương thảo và hoa quả. Món trà này phù hợp cho mọi thời điểm trong ngày, từ sáng sớm đến chiều tối, và thậm chí là vào ban đêm khi bạn cần một cốc trà để thư giãn.
+
+Với công thức pha trộn đặc biệt, Chocolate Đá đã được yêu thích bởi nhiều người. Trà có thể được uống nóng hay lạnh, đều mang lại những trải nghiệm ẩm thực tuyệt vời. Nếu bạn đang tìm kiếm một món đồ uống mới và ngon, thì Chocolate Đá là lựa chọn tuyệt vời cho bạn.","{'product_sizes': 'S|M|L', 'product_prices': '55000|60000|65000'}",₫,36,221,50,32,4.1,Tea
+Oolong Tứ Quý Sen,https://thecoffeehouse.com/products/oolong-tu-quy-sen,thecoffeehouse,http://product.hstatic.net/1000075078/product/1737356345_oolong-sen_0bbcc5560e2e4d599f82a0b152bcc222_grande.png,1,oolong tứ quý sen,TH-TE-007,"Món trà Oolong Tứ Quý Sen là một sự kết hợp hoàn hảo giữa vị ngọt của hoa sen và vị trà xanh sảng khoái. Trà được làm từ những lá trà oolong chất lượng cao, giúp tạo nên một hương thơm tinh tế và mát mẻ.
+
+Ngay khi mở nắp, bạn sẽ được chào đón bởi một mùi hương dịu nhẹ, khơi dậy cảm giác thư giãn và thoải mái. Khi uống, trà Oolong Tứ Quý Sen mang lại một cảm giác sảng khoái, giúp đẩy lùi căng thẳng và mệt mỏi sau ngày dài.
+
+Cốt lõi của trà này là sự cân bằng giữa vị ngọt của hoa sen và vị trà xanh sảng khoái, tạo nên một hương thơm độc đáo và khó quên. Trà có thể được uống nóng hay lạnh, tùy thuộc vào sở thích cá nhân của bạn.
+
+Món trà Oolong Tứ Quý Sen phù hợp với mọi lứa tuổi, từ người lớn đến trẻ nhỏ. Nó là một lựa chọn tuyệt vời cho những ai yêu thích trà xanh và đang tìm kiếm một món thức uống mới để thay đổi hương vị mỗi ngày.
+
+Tóm lại, trà Oolong Tứ Quý Sen là một sản phẩm trà xuất sắc, mang lại cảm giác thư giãn và thoải mái cho người dùng. Nơi đây có thể được thưởng thức mọi lúc, mọi nơi.","{'product_sizes': 'S|M|L', 'product_prices': '49000|54000|59000'}",₫,6,244,50,8,3.5,Tea
+Oolong Tứ Quý Dâu Trân Châu,https://thecoffeehouse.com/products/oolong-tu-quy-dau-tran-chau,thecoffeehouse,http://product.hstatic.net/1000075078/product/1737356372_oolong-tu-quy-dau_ead67903b9004084a0cee99e33312d57_grande.png,1,oolong tứ quý dâu trân châu,TH-TE-008,"Món trà quý tộc Oolong Tứ Quý Dâu Trân Châu - sự hòa hợp giữa hương vị thiên nhiên và vẻ đẹp của Trung Hoa. Trà được làm từ những lá oolong hảo hạng nhất, kết hợp với công thức bí mật mang lại cho người uống một cảm giác thư giãn và hồi hộp.
+
+Khi mở nắp chai, bạn sẽ ngay lập tức bị thu hút bởi mùi hương dịu dàng, như thể được đưa vào thế giới riêng của mình. Rất nhanh sau đó, vị trí trà sẽ phun lên, đem lại cảm giác tươi tắn, không khí trong lành, và sự thư giãn hoàn toàn.
+
+Trà Oolong Tứ Quý Dâu Trân Châu là một trải nghiệm tuyệt vời cho những người yêu thích trà oolong và những ai tìm kiếm một món uống giải khát mới. Chất lượng trà hảo hạng, công thức bí mật, và hương vị thiên nhiên sẽ mang lại cho bạn một cảm giác thư giãn và hồi hộp trong suốt ngày.","{'product_sizes': 'S|M|L', 'product_prices': '49000|54000|59000'}",₫,0,389,50,81,3.9,Tea
+Oolong Tứ Quý Kim Quất Trân Châu,https://thecoffeehouse.com/products/oolong-tu-quy-kim-quat-tran-chau,thecoffeehouse,http://product.hstatic.net/1000075078/product/1737356364_oolong-kim-quat-tran-chau_868486a049ba4e88a88be43abf6cf5fc_grande.png,1,oolong tứ quý kim quất trân châu,TH-TE-009,"Món trà đặc biệt Oolong Tứ Quý Kim Quất Trân Châu mang lại cho bạn một cuộc hành trình cảm thụ tuyệt vời. Ngay từ những lúc đầu tiên, hương thơm quyến rũ của trà được trải ra, đánh thức toàn thân và tạo nên bầu không khí thư giãn.
+
+Khi thưởng thức, bạn sẽ gặp phải mùi vị tươi mới, phảng phất hơi thơm cỏ và hoa quả. Mùi vị này càng ngày càng phát triển, mang lại cho bạn cảm giác hân hạnh và thư thái.
+
+Thể tích trà nhỏ gọn nhưng chứa đựng nhiều hương vị, tạo nên một trải nghiệm thưởng trà tuyệt vời cho người thưởng thức. Oolong Tứ Quý Kim Quất Trân Châu là món trà phù hợp nhất cho những ai yêu thích hương vị tươi mới và thư giãn.
+
+Tóm lại, Oolong Tứ Quý Kim Quất Trân Châu là món trà lý tưởng cho những ngày hè oi bức và những phút thư giãn sau một ngày làm việc. Đừng bỏ lỡ cơ hội để thưởng thức món trà tuyệt vời này!","{'product_sizes': 'S|M|L', 'product_prices': '49000|54000|59000'}",₫,31,375,50,49,4.1,Tea
+Oolong Tứ Quý Vải,https://thecoffeehouse.com/products/oolong-tu-quy-vai,thecoffeehouse,http://product.hstatic.net/1000075078/product/1737356353_oolong-tu-quy-vai_56ba32db39ca48f986e716d1a2a8c447_grande.png,1,oolong tứ quý vải,TH-TE-010,"Món trà oolong Tứ Quý Vải được pha chế từ những lá trà cao cấp, mang lại cho người dùng một trải nghiệm thư giãn và sảng khoái. Trà này có hương vị thơm ngon, với gợi ý của hoa sen và mùi gỗ nhẹ, giúp người dùng cảm thấy thoải mái và giải trí.
+
+Khi uống trà, bạn sẽ cảm nhận được sự cân bằng giữa các vị chua, ngọt và đắng, tạo nên một trải nghiệm đầy thú vị. Món trà oolong Tứ Quý Vải không chỉ là một loại đồ uống hàng ngày, mà còn là một cách để thư giãn và giải trí sau một ngày dài.
+
+Với thành phần thảo dược tự nhiên, trà này giúp cơ thể loại bỏ mệt mỏi và stress, mang lại cho người dùng một cảm giác khỏe khoắn và tươi trẻ. Ngoài ra, trà oolong Tứ Quý Vải còn có tác dụng giảm cân, nhờ vào sự kết hợp của các dưỡng chất trong lá trà.
+
+Tóm lại, món trà oolong Tứ Quý Vải là một sản phẩm hoàn hảo cho những người yêu thích trà oolong và muốn thưởng thức một trải nghiệm thư giãn và sảng khoái.","{'product_sizes': 'S|M|L', 'product_prices': '49000|54000|59000'}",₫,0,320,50,12,4.3,Tea
+Chocolate Nóng,https://thecoffeehouse.com/products/chocolate-nong,thecoffeehouse,http://product.hstatic.net/1000075078/product/1737355571_chocolate-nong_422eb78454814a0c9f79ac8805449244_grande.png,1,chocolate nóng,TH-CH-001,"**Chất Lượng Chocolate Nóng**
+
+Mỗi ngày, bạn luôn cần một chút khêu gợi để giải quyết những căng thẳng và mệt mỏi. Và đó là lúc Chocolate Nóng đến giúp đỡ! Với hương vị socola thơm ngào và chất lượng chocolate ngon nhất, Chocolate Nóng sẽ mang lại cho bạn một khoảng thời gian nghỉ ngơi tuyệt vời.
+
+Chất lỏng mượt của Chocolate Nóng sẽ chảy dần trên đầu lưỡi, lan tỏa hương vị socola ngọt ngào và chút bittersweet. Màu sắc hấp dẫn và hình dạng đẹp mắt sẽ làm bạn cảm thấy như đang được thưởng thức một món quà đặc biệt.
+
+Chocolate Nóng được sản xuất từ những nguyên liệu chất lượng cao, đảm bảo an toàn cho sức khỏe và không chứa thêm bất kỳ chất phụ gia nào. Bạn có thể yên tâm rằng mỗi ly Chocolate Nóng đều mang lại cho bạn một trải nghiệm tốt đẹp.
+
+Chọn Chocolate Nóng hôm nay và thưởng thức khoảnh khắc thư giãn tuyệt vời!","{'product_sizes': 'S|M|L', 'product_prices': '55000|60000|65000'}",₫,22,101,50,9,4.2,Chocolate & Cacao
+A-Mê Classic,https://thecoffeehouse.com/products/a-me-classic,thecoffeehouse,http://product.hstatic.net/1000075078/product/1744032449_1737354959-ame-classic-400x400_fd01b10cd5874ffabf786bef742b9acf_grande.png,1,a-mê classic,TH-CO-001,"Món đồ uống A-Mê Classic là một trong những lựa chọn tuyệt vời cho những người yêu thích cà phê. Đây là một thức uống truyền thống, với hương thơm và vị ngon của cà phê được pha trộn hài hòa với các nguyên liệu tự nhiên. A-Mê Classic mang lại cho bạn cảm giác tỉnh táo, tươi trẻ sau mỗi lần thưởng.
+
+Sự pha trộn hoàn hảo của caffeine và các chất dinh dưỡng tự nhiên giúp tăng cường năng lượng và giảm thiểu stress. Thức uống này cũng rất thích hợp cho những người muốn thưởng thức cà phê trong suốt ngày dài, nhờ vào hương thơm và vị ngon lâu dài.
+
+A-Mê Classic là một lựa chọn tuyệt vời cho những người yêu thích cà phê truyền thống. Đừng bỏ qua món đồ uống này, hãy thêm nó vào danh sách của bạn ngay hôm nay!",39000,₫,0,113,50,8,2.8,Coffee
+A-Mê Mơ,https://thecoffeehouse.com/products/a-me-mo,thecoffeehouse,http://product.hstatic.net/1000075078/product/1744032263_1737355001-ame-mo-400x400_d227031b24e94845bd7c203b60193ea9_grande.png,1,a-mê mơ,TH-CO-002,"Món cafe A-Mê Mơ là một trong những lựa chọn tuyệt vời cho những người yêu thích hương vị mạnh mẽ và thơm ngào của cafe. Khi mở bao bì, bạn sẽ ngay lập tức được ấn tượng bởi màu sắc đẹp mắt và hương thơm của cà phê. Món cafe này có hàm lượng caffein vừa phải, giúp kích thích não bộ và cải thiện tinh thần.
+
+A-Mê Mơ là một trong những thương hiệu cafe nổi tiếng tại Việt Nam, được nhiều người yêu thích và tin tưởng. Với công thức pha chế đặc biệt, món cafe này mang lại hương vị phong phú và cân bằng, không quá mạnh mẽ cũng không quá yếu.
+
+Khi thưởng thức A-Mê Mơ, bạn sẽ cảm nhận rõ ràng được hương thơm của cà phê, kết hợp với một chút sweetness và một chút bittersweet. Món cafe này phù hợp cho những người yêu thích cafe strong, nhưng lại muốn có một chút cân bằng trong hương vị.",45000,₫,45,216,50,128,2.6,Coffee
+A-Mê Quất,https://thecoffeehouse.com/products/a-me-quat,thecoffeehouse,http://product.hstatic.net/1000075078/product/1744032124_1737355011-ame-quat-400x400_247f133ec3764de38992089eb89161b0_grande.png,1,a-mê quất,TH-CO-003,"Mô tả sản phẩm A-Mê Quất:
+
+A-Mê Quất là một loại cà phê tuyệt vời giúp bạn có được một ngày mới bắt đầu với năng lượng và sự tươi tắn. Khối lượng của mỗi gói cà phê đã được cân nhắc kỹ lưỡng để mang lại hương vị thơm ngon, không quá ngọt, không quá béo, chỉ đúng mức.
+
+Cà phê A-Mê Quất được sản xuất bằng công nghệ hiện đại nhất, đảm bảo về chất lượng và an toàn cho người dùng. Mỗi ly cà phê đều mang một hương vị đặc biệt, giúp bạn cảm thấy thư giãn sau một ngày dài làm việc.
+
+A-Mê Quất không chỉ là một loại cà phê ngon, mà còn là một lựa chọn phù hợp cho những người yêu thích cafe, những người muốn có được một phút nghỉ ngơi trong ngày. Cà phê này đã được nhiều người sử dụng và đều rất hài lòng với hương vị và chất lượng.
+
+Tóm lại, A-Mê Quất là một loại cà phê tuyệt vời cho những ai yêu thích hương vị ngon, chất lượng tốt và an toàn cho sức khỏe.",49000,₫,44,257,50,46,4.8,Coffee
+A-Mê Tuyết Đào,https://thecoffeehouse.com/products/a-me-tuyet-dao,thecoffeehouse,http://product.hstatic.net/1000075078/product/1744031998_1737355030-ame-tuyet-dao-400x400_6d1748248f2b48c1ae4bf124fe9e16b0_grande.png,1,a-mê tuyết đào,TH-CO-004,"Món đồ uống A-Mê Tuyết Đào là một món quánh đáo và ấm áp, được chế biến từ những hạt cà phê tươi mới và các nguyên liệu tự nhiên. Mùi hương của nó giống như một cơn sóng biển, đưa bạn đến một nơi yên tĩnh và thư giãn.
+
+Cốc A-Mê Tuyết Đào có một độ đậm đặc biệt, không quá mạnh nhưng cũng không quá yếu, tạo điều kiện cho người uống thưởng thức được hương vị cà phê trong cùng. Khối lượng café tinh khiết trong mỗi cốc giúp cho người uống có thể cảm nhận được rõ ràng về hương thơm và vị bittersweet của cà phê.
+
+A-Mê Tuyết Đào là lựa chọn tuyệt vời cho những ai yêu thích cà phê, đặc biệt là những ai đang tìm kiếm một món đồ uống để thư giãn sau một ngày dài lao động. Cốc cà phê này còn có thể được dùng để phục vụ khách trong các bữa tiệc hay gặp gỡ bạn bè.
+
+Tóm lại, A-Mê Tuyết Đào là một sản phẩm đồ uống cà phê hảo hạng, mang lại trải nghiệm thư giãn và hương vị độc đáo cho người uống.",59000,₫,0,476,50,103,4.6,Coffee
+A-Mê Tuyết Mơ,https://thecoffeehouse.com/products/a-me-tuyet-mo,thecoffeehouse,http://product.hstatic.net/1000075078/product/1744031902_1737355037-ame-tuyet-mo-400x400_ab440cb323ab4866b141e0e43adf0fc2_grande.png,1,a-mê tuyết mơ,TH-CO-005,"Món đồ uống cà phê A-Mê Tuyết Mơ là một trải nghiệm thú vị cho tất cả các người yêu thích hương vị đặc biệt. Cốc cà phê này được pha chế với công thức riêng biệt để mang lại vị ngon và tươi mới, giúp bạn có thể thưởng thức trong mọi khoảnh khắc.
+
+Cốt lõi của A-Mê Tuyết Mơ là sự kết hợp hài hòa giữa những hạt cà phê premium và những nguyên liệu tự nhiên, tạo ra một hương vị trọn vẹn. Ngay từ lần đầu tiên, bạn sẽ cảm nhận được rõ ràng rằng đây không chỉ là một cốc cà phê thông thường.
+
+A-Mê Tuyết Mơ có thể được thưởng thức mọi lúc, bất kể bạn đang trong trạng thái thư giãn hay đang cần thêm năng lượng để vượt qua những ngày dài. Với mức giá 59,000 VND, sản phẩm này là sự lựa chọn tuyệt vời cho những ai yêu thích cà phê và muốn trải nghiệm hương vị mới.
+
+Tóm lại, A-Mê Tuyết Mơ là một món đồ uống cà phê chất lượng cao, mang lại hương vị tươi mới và ngon miệng cho người dùng. Trải nghiệm ngay hôm nay để khám phá hương vị đặc biệt của A-Mê Tuyết Mơ!",59000,₫,0,339,50,18,4.3,Coffee
+A-Mê Tuyết Quất,https://thecoffeehouse.com/products/a-me-tuyet-quat,thecoffeehouse,http://product.hstatic.net/1000075078/product/1744031754_1737355048-ame-tuyet-quat-400x400_ff4eff1fc1d4474ca1804976bfef9b62_grande.png,1,a-mê tuyết quất,TH-CO-006,"Món cafe ngon nhất A-Mê Tuyết Quất, một trong những loại cafe được yêu thích nhất hiện nay. Cafe này có hương vị thơm thoáng, pha trộn giữa vị cafe và vị quất chín, mang lại cho bạn một cảm giác thư giãn sau mỗi ngày.
+
+Cafe A-Mê Tuyết Quất được sản xuất với công nghệ tiên tiến, đảm bảo chất lượng cao nhất. Món cafe này phù hợp với mọi lứa tuổi, từ người lớn đến trẻ em. Vì vậy, đừng ngần ngại nữa, hãy thử ngay A-Mê Tuyết Quất và cảm nhận vị ngon tuyệt vời của món cafe này.
+
+Tóm lại, A-Mê Tuyết Quất là một trong những loại cafe ngon nhất hiện nay, được yêu thích bởi hương vị thơm thoáng và giá cả hợp lý. Đừng bỏ qua cơ hội để thử ngay A-Mê Tuyết Quất và thưởng thức vị ngon tuyệt vời của món cafe này.",59000,₫,48,124,50,41,4,Coffee
