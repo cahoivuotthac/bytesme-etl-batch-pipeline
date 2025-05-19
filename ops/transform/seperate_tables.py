@@ -194,9 +194,3 @@ def seperate_tables(input_dir: str, output_dir: str):
 		_process_input_file(file)
 	
 	return _write_outputs(output_dir)
-
-base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-input_dir = os.path.join(base_dir, 'data/staging/')
-output_dir = os.path.join(base_dir, 'data/processed/')
-rs = seperate_tables(input_dir, output_dir)
-print(f"Result: {rs}")

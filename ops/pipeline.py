@@ -53,10 +53,6 @@ class TransformPipeline:
 			logger.info(f"Applying transformation: {transform}")
 
 			if transform == "standardize_categories":
-				# Standard categories
-				# if file_name in ['bingsu_products.csv', 'topping_products.csv']:
-				# 	continue
- 
 				if 'original_category' in df.columns:
 					logger.info("Column original_category is found!")
 				input_df = df[['product_name', 'original_category']]
@@ -80,11 +76,11 @@ class TransformPipeline:
 				if columns_to_update:
 					df = update_product_dataset(df, output_staging_file) 
 
-				# df.to_csv(self.output_staging_dir)
-			# elif transform == 'seperate_tables':
+				df.to_csv(self.output_staging_dir)
+			elif transform == 'seperate_tables':
     
-			# 	rs = seperate_tables(self.output_staging_dir, self.output_processed_dir)
-			# 	logger.info(f"Result of seperating tables: {rs}")
+				rs = seperate_tables(self.output_staging_dir, self.output_processed_dir)
+				logger.info(f"Result of seperating tables: {rs}")
 
 		df.to_csv(output_staging_file, index=False)
 		logger.info(f"Saved processed file to {output_staging_file}")

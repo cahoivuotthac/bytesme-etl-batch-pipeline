@@ -127,24 +127,21 @@ def update_product_dataset(df: pd.DataFrame, output_file: str) -> pd.DataFrame:
 				df.at[idx, 'product_unit_price'] = {'product_price': str(mock_price)}
 				logger.info(f"Check product price: {df.at[idx, 'product_unit_price']}")	
     
-		# if pd.isna(df.at[idx, 'product_description']) or df.at[idx, 'product_description'] == '':
-		# 	description = _generate_product_description_with_ollama(df.loc[idx])
-		# 	df.at[idx, 'product_description'] = str(description) if description is not None else ''
-		# 	logger.info(f"Check product description: {description}") 
+		if pd.isna(df.at[idx, 'product_description']) or df.at[idx, 'product_description'] == '':
+			description = _generate_product_description_with_ollama(df.loc[idx])
+			df.at[idx, 'product_description'] = str(description) if description is not None else ''
+			logger.info(f"Check product description: {description}") 
     
 	df['product_discount_percentage'] = _generate_discount_percentage(len(df))
 
 	os.makedirs('data/staging', exist_ok=True)
 	output_file_exists = os.path.isfile(output_file)
-	# df = df.drop(columns=['Unnamed'])
 	df.to_csv(
 		output_file,
 		index=False,
 		mode='w',
-		# header=not output_file_exists
 	)	
 	
 	return df
 
-df = pd.read_csv('data/staging/topping_products.csv')
-df_new = update_product_dataset(df, "data/staging/topping_products.csv")
+
