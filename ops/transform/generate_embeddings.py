@@ -43,7 +43,7 @@ def _create_text_for_embedding(product_data):
         name_parts.append(f"Thương hiệu của sản phẩm {product_data['product_brand']}.")
     
     if 'category_name' in product_data and pd.notna(product_data['category_name']):
-        name_parts.append(f"Sản phẩm thuộc về danh mục phân loại {product_data['category_name']}.")
+        name_parts.append(f"Sản phẩm thuộc về danh mục {product_data['category_name']}.")
     
     if name_parts:
         text_parts.append(" ".join(name_parts))
@@ -78,7 +78,7 @@ def _create_text_for_embedding(product_data):
         try:
             discount = float(product_data['product_discount_percentage'])
             if discount > 0:
-                price_section.append(f"Sản phẩm đang được giảm giá {discount}% phần trăm.")
+                price_section.append(f"Sản phẩm đang được giảm giá {discount}%.")
         except (ValueError, TypeError):
             pass
     
@@ -92,16 +92,16 @@ def _create_text_for_embedding(product_data):
             if stars > 4.5:
                 popularity_section.append(f"Sản phẩm này được đánh giá rất cao với {stars} sao trên 5.")
             elif stars > 3.5:
-                popularity_section.append(f"Sản phẩm này được đánh giá tốt với {stars} sao trên 5.")
+                popularity_section.append(f"Sản phẩm này được đánh giá tốt với {stars} sao trên 3.5.")
             else:
-                popularity_section.append(f"Sản phẩm này có số điểm đánh giá là {stars} sao trên 5.")
+                popularity_section.append(f"Sản phẩm này có số điểm đánh giá là {stars}.")
         except (ValueError, TypeError):
             pass
 
     if 'product_total_ratings' in product_data and pd.notna(product_data['product_total_ratings']):
         try:
             ratings = int(product_data['product_total_ratings'])
-            popularity_section.append(f"Sản phẩm đã được {ratings} khách hàng đánh giá.")
+            popularity_section.append(f"Sản phẩm có tổng số lượt {ratings} khách hàng đánh giá.")
         except (ValueError, TypeError):
             pass
 
@@ -111,7 +111,7 @@ def _create_text_for_embedding(product_data):
             if orders > 1000:
                 popularity_section.append(f"Đây là sản phẩm bán chạy với hơn {orders} lượt đặt hàng.")
             else:
-                popularity_section.append(f"Sản phẩm đã được đặt hàng {orders} lần.")
+                popularity_section.append(f"Sản phẩm đã bán được {orders} đơn hàng.")
         except (ValueError, TypeError):
             pass
 
@@ -133,31 +133,28 @@ def _create_text_for_embedding(product_data):
             pass
  
     if 'category_name' in product_data and pd.notna(product_data['category_name']):
-        category = product_data['category_name'].lower()
-        
+        category = product_data['category_name']
+    
     if any(term in category for term in ['cookie', 'biscuit']):
         text_parts.append("Bánh quy giòn rụm, trẻ em có thể rất yêu thích.")
 
     if any(term in category for term in ['cake']):
-        text_parts.append("Đây là món tráng miệng mềm ngọt, thường được thưởng thức sau bữa ăn hoặc ăn vặt trong các buổi xế chiều.")
-
-    if any(term in category for term in ['bingsu', 'chilled', 'cold', 'frosty']):
-        text_parts.append("Đây là món ăn hoặc thức uống mát lạnh, sảng khoái, thích hợp dùng trong thời tiết nóng bức.")
+        text_parts.append("Đây là món bánh ngọt mềm ngọt, bông mịn, thường được thưởng thức sau bữa ăn hoặc ăn vặt trong các buổi xế chiều.")
 
     if any(term in category for term in ['pastry', 'pie']):
         text_parts.append("Đây là loại bánh được nướng thơm lừng, vỏ giòn rụm, thường làm từ bột mì và có vị ngọt hoặc mặn.")
 
     if any(term in category for term in ['drink', 'tea', 'coffee', 'chocolate', 'cacao', 'frosty']):
-        text_parts.append("Đây là một loại đồ uống thơm ngon, thích hợp để giải khát.")
+        text_parts.append("Đây là một loại thức uống thơm ngon, mát, thích hợp để giải khát.")
 
     if 'coffee' in category:
-        text_parts.append("Đây là đồ uống cà phê đậm đà, giúp tỉnh táo và khơi dậy năng lượng.")
+        text_parts.append("Đây là thức uống cà phê đậm đà, giúp tỉnh táo và khơi dậy năng lượng.")
 
     if 'tea' in category:
         text_parts.append("Trà thanh mát, thơm đậm, có thể dùng nóng hoặc lạnh tùy theo sở thích. Đồng thời trà cũng giúp tỉnh táo.")
 
     if any(term in category for term in ['chocolate', 'cacao']):
-        text_parts.append("Đây là đồ uống từ sô cô la hoặc ca cao, hơi đắng nhẹ, béo ngậy, ngọt ngào và hấp dẫn.")
+        text_parts.append("Đây là thức uống từ sô cô la hoặc ca cao, hơi đắng nhẹ, béo ngậy, ngọt ngào và hấp dẫn.")
 
     if any(term in category for term in ['season', 'specialist']):
         text_parts.append("Đây là món bánh theo mùa, chỉ có trong thời gian giới hạn.")
@@ -210,7 +207,6 @@ def prepare_documents(products):
         
         metadata = _create_metadata_dict(product)
         
-        # Crate Document object 
         doc = Document(
 			page_content=text,
 			metadata=metadata
@@ -234,7 +230,6 @@ def create_embeddings_and_store(documents):
     total_batches = (len(documents) + batch_size - 1) // batch_size
     
     try:
-        # Set up database connection
         conn = psycopg2.connect(
             host=DB_HOST,
             port=DB_PORT,
@@ -253,11 +248,9 @@ def create_embeddings_and_store(documents):
         except Exception as e:
             logger.warning(f"Could not create vector extension (may need admin rights): {e}")
         
-        # Drop existing tables to start fresh
         cursor.execute("DROP TABLE IF EXISTS langchain_pg_embedding;")
         cursor.execute("DROP TABLE IF EXISTS langchain_pg_collection;")
         
-        # Create collection table
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS langchain_pg_collection (
             id UUID PRIMARY KEY,
@@ -266,7 +259,6 @@ def create_embeddings_and_store(documents):
         );
         """)
         
-        # Create embedding table
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS langchain_pg_embedding (
             id UUID PRIMARY KEY,
@@ -277,7 +269,6 @@ def create_embeddings_and_store(documents):
         );
         """)
         
-        # Create collection entry
         collection_id = uuid.uuid4()
         cursor.execute("""
         INSERT INTO langchain_pg_collection (id, name, cmetadata)
@@ -296,7 +287,6 @@ def create_embeddings_and_store(documents):
                 # Generate embedding
                 embedding_vector = embeddings_model.embed_query(doc.page_content)
                 
-                # Insert into database
                 cursor.execute("""
                 INSERT INTO langchain_pg_embedding (id, collection_id, embedding, document, cmetadata)
                 VALUES (%s, %s, %s::vector, %s, %s);
@@ -383,10 +373,8 @@ def test_search(query, top_k=3):
             encode_kwargs={"normalize_embeddings": True}
         )
         
-        # Generate embedding vector for the query
         query_embedding = embeddings_model.embed_query(query)
         
-        # Connect to database
         conn = psycopg2.connect(
             host=DB_HOST,
             port=DB_PORT,
@@ -419,11 +407,9 @@ def test_search(query, top_k=3):
         for row in cursor.fetchall():
             document_text, metadata_json, distance = row
             
-            # Fix: Check the type of metadata_json before trying to parse it
             if isinstance(metadata_json, dict):
-                metadata = metadata_json  # Already a dict, no need to parse
+                metadata = metadata_json  
             elif metadata_json:
-                # It's a string, parse it
                 metadata = json.loads(metadata_json)
             else:
                 metadata = {}
@@ -434,16 +420,13 @@ def test_search(query, top_k=3):
         cursor.close()
         conn.close()
         
-        # Extract product codes from the results
         product_codes = []
         for doc, _ in results:
             if 'product_code' in doc.metadata:
                 product_codes.append(doc.metadata['product_code'])
         
-        # Get full product details
         product_details = get_full_product_details(product_codes)
         
-        # Print results for testing
         print("\nSearch Results for:", query)
         print("=" * 50)
         
