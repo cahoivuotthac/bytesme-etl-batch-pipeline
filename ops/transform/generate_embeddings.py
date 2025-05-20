@@ -5,12 +5,12 @@ import uuid
 import pandas as pd
 from dotenv import load_dotenv
 import psycopg2
-from langchain_postgres import PGVector
 from langchain_core.documents import Document
 from sentence_transformers import SentenceTransformer
 from config.logger_config import setup_logger
-from langchain_huggingface import HuggingFaceEmbeddings
 from psycopg2.extensions import register_adapter, AsIs
+from sentence_transformers import SentenceTransformer
+from pyvi.ViTokenizer import tokenize
 
 load_dotenv()
 logger = setup_logger('embeddings_transform.log')
@@ -33,7 +33,7 @@ SCHEMA_NAME = "analytics"
 CONNECTION_STRING = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?options=-c%20search_path%3D{SCHEMA_NAME}%2Cpublic"
 COLLECTION_NAME = "product_pg_embeddings"
 
-VIETNAMESE_MODEL = "vinai/phobert-base-v2"
+VIETNAMESE_MODEL = "VoVanPhuc/sup-SimCSE-VietNamese-phobert-base"
 EMBEDDING_DIMENSIONS = 768
 
 def _create_text_for_embedding(product_data, category_map=None, category_descriptions=None):
@@ -242,14 +242,37 @@ def prepare_documents(products, category_map=None, category_descriptions=None):
     logger.info(f"Preparing {len(documents)} for embedding")
     return documents
 
-def create_embeddings_and_store(documents):
-    """Create embeddings and store them directly in the database."""
-    model = get_embedding_model() 
-    def embed_text(text):
+_model = None 
+def get_embedding_model():
+    """
+    Get or create a cached SentenceTransformer model optimized for Vietnamese.
+    This prevents reloading the model multiple times during execution.
+    """
+    global _model
+    if _model is None:
+        try:
+            logger.info(f"Load pretrained SentenceTransformer: {VIETNAMESE_MODEL}")
+            _model = SentenceTransformer(VIETNAMESE_MODEL, device="cpu")
+            logger.info(f"Successfully loaded model: {VIETNAMESE_MODEL}")
+        except Exception as e:
+            fallback_model = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+            logger.warning(f"Failed to load {VIETNAMESE_MODEL}, falling back to {fallback_model}: {e}")
+            _model = SentenceTransformer(fallback_model, device="cpu")
+    return _model
+
+def embed_text(text):
+    """Wrapper function to safely create embeddings"""
+    try:
+        model = get_embedding_model()
         embeddings = model.encode(text, normalize_embeddings=True)
         return embeddings.tolist()
-    
-    
+    except Exception as e:
+        logger.error(f"Error embedding text: {e}")
+        # Return zeros array as fallback (with proper dimension)
+        return [0.0] * EMBEDDING_DIMENSIONS
+
+def create_embeddings_and_store(documents):
+    """Create embeddings and store them directly in the database."""
     # Process in batches to avoid memory issues 
     batch_size = 50
     total_batches = (len(documents) + batch_size - 1) // batch_size
@@ -257,14 +280,13 @@ def create_embeddings_and_store(documents):
     try:
         conn = psycopg2.connect(
             host=DB_HOST,
-            port=DB_PORT,
+            port=DB_PORT, 
             dbname=DB_NAME,
             user=DB_USER,
             password=DB_PASSWORD
         )
         
         cursor = conn.cursor()
-        # Create schema
         cursor.execute(f"CREATE SCHEMA IF NOT EXISTS {SCHEMA_NAME};")
         cursor.execute(f"SET search_path TO {SCHEMA_NAME}, public;")
         
@@ -284,11 +306,11 @@ def create_embeddings_and_store(documents):
         );
         """)
         
-        cursor.execute("""
+        cursor.execute(f"""
         CREATE TABLE IF NOT EXISTS langchain_pg_embedding (
             id UUID PRIMARY KEY,
             collection_id UUID REFERENCES langchain_pg_collection(id),
-            embedding VECTOR(768),
+            embedding VECTOR({EMBEDDING_DIMENSIONS}),
             document TEXT,
             cmetadata JSONB
         );
@@ -309,19 +331,23 @@ def create_embeddings_and_store(documents):
             
             # Process each document in the batch
             for doc in batch:
-                # Generate embedding
-                embedding_vector = embed_text(doc.page_content)
-                
-                cursor.execute("""
-                INSERT INTO langchain_pg_embedding (id, collection_id, embedding, document, cmetadata)
-                VALUES (%s, %s, %s::vector, %s, %s);
-                """, (
-                    uuid.uuid4(),
-                    collection_id,
-                    embedding_vector,
-                    doc.page_content,
-                    json.dumps(doc.metadata)
-                ))
+                try:
+                    # Generate embedding
+                    embedding_vector = embed_text(doc.page_content)
+                    
+                    cursor.execute("""
+                    INSERT INTO langchain_pg_embedding (id, collection_id, embedding, document, cmetadata)
+                    VALUES (%s, %s, %s::vector, %s, %s);
+                    """, (
+                        uuid.uuid4(),
+                        collection_id,
+                        embedding_vector,
+                        doc.page_content,
+                        json.dumps(doc.metadata)
+                    ))
+                except Exception as doc_error:
+                    logger.error(f"Error processing document: {doc_error}")
+                    continue
             
             conn.commit()
             
@@ -334,14 +360,6 @@ def create_embeddings_and_store(documents):
         logger.error(f"Error creating embeddings: {e}")
         raise
 
-_model = None
-
-def get_embedding_model():
-    global _model
-    if _model is None:
-        logger.info(f"Load pretrained SentenceTransformer: {VIETNAMESE_MODEL}")
-        _model = SentenceTransformer(VIETNAMESE_MODEL)
-    return _model
   
 def get_full_product_details(product_codes):
     """Retrieve full product details from app_data after vector search for testing"""
@@ -400,9 +418,10 @@ def get_full_product_details(product_codes):
 def test_search(query, top_k=3):
     """Test search functionality using vector distance with proper casting."""
     try:
-        model = get_embedding_model() 
+        query_embedding = embed_text(query)
         
-        query_embedding = model.encode(query, normalize_embeddings=True).tolist()
+        if all(v == 0.0 for v in query_embedding):
+            logger.error("Query embedding failed, search results will be inaccurate")
          
         conn = psycopg2.connect(
             host=DB_HOST,
