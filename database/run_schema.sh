@@ -7,7 +7,7 @@ set +o allexport
 
 export PGPASSWORD=$POSTGRES_DB_PASSWORD
 
-SCHEMA_FILE="database/bytesme_vector_schema.sql"
+SCHEMA_FILE="database/bytesme_psql_schema.sql"
 
 psql -U $POSTGRES_DB_USER -d $POSTGRES_DB_NAME -f $SCHEMA_FILE
 

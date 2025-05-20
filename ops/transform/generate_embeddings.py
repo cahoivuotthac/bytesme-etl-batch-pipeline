@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 import psycopg2
 from langchain_postgres import PGVector
 from langchain_core.documents import Document
+from sentence_transformers import SentenceTransformer
 from config.logger_config import setup_logger
 from langchain_huggingface import HuggingFaceEmbeddings
 from psycopg2.extensions import register_adapter, AsIs
@@ -32,18 +33,71 @@ SCHEMA_NAME = "analytics"
 CONNECTION_STRING = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?options=-c%20search_path%3D{SCHEMA_NAME}%2Cpublic"
 COLLECTION_NAME = "product_pg_embeddings"
 
-def _create_text_for_embedding(product_data):
+VIETNAMESE_MODEL = "vinai/phobert-base-v2"
+EMBEDDING_DIMENSIONS = 768
+
+def _create_text_for_embedding(product_data, category_map=None, category_descriptions=None):
     text_parts = []
     
+    product_type = None
+    drink_category_ids = [10, 11, 12, 13]  
+    food_category_ids = [1, 2, 3, 4, 5, 6, 7, 8, 9]  
+    
+    if 'category_id' in product_data and pd.notna(product_data['category_id']):
+        category_id = product_data['category_id']
+        
+        if category_id in drink_category_ids:
+            product_type = "thức uống"
+            text_parts.append("ĐÂY LÀ THỨC UỐNG. Đây là một loại đồ uống, không phải loại bánh ăn được. Sản phẩm này thuộc nhóm đồ uống giải khát.")
+        elif category_id in food_category_ids:
+            product_type = "món ăn"
+            text_parts.append("ĐÂY LÀ MÓN ĂN hoặc BÁNH. Đây là đồ ăn, không phải đồ uống. Sản phẩm này thuộc nhóm thực phẩm ăn được.")
+    
+    category = ""
+    category_desc = ""
+    if 'category_id' in product_data and pd.notna(product_data['category_id']) and category_map is not None:
+        category_id = product_data['category_id']
+        if category_id in category_map:
+            category = category_map[category_id].lower()
+            text_parts.append(f"Sản phẩm thuộc danh mục {category_map[category_id]}.")
+            
+            if category_descriptions and category_id in category_descriptions:
+                category_desc = category_descriptions[category_id]
+                text_parts.append(f"Về danh mục này: {category_desc}")
+    
+    if product_type == "thức uống":
+        if 'trà' in category.lower():
+            text_parts.append("Đây là đồ uống trà thơm ngon, thích hợp giải khát. Trà là thức uống, không phải bánh. Đây là thức uống giúp tỉnh táo, thư giãn.")
+        
+        if 'cà phê' in category.lower():
+            text_parts.append("Đây là đồ uống cà phê đậm đà. Cà phê là thức uống, không phải bánh. Đây là thức uống giúp tỉnh táo, tăng năng lượng.")
+        
+        if 'đá xay' in category.lower() or 'thức uống đá' in category.lower():
+            text_parts.append("Đây là đồ uống đá xay mát lạnh, thích hợp giải nhiệt mùa hè. Đây là thức uống, không phải bánh.")
+    
+    elif product_type == "món ăn":
+        if 'bánh ngọt' in category.lower() or 'bánh kem' in category.lower():
+            text_parts.append("Đây là bánh ngọt mềm mịn, thơm phức. Bánh ngọt là đồ ăn, không phải đồ uống. Bánh ngọt có vị ngọt, mềm và không dùng để uống.")
+        
+        if 'bánh giòn' in category.lower() or 'bánh nướng' in category.lower() or 'bánh ngàn lớp' in category.lower():
+            text_parts.append("Đây là bánh giòn, nướng vàng thơm phức. Bánh nướng là đồ ăn, không phải đồ uống. Bánh có độ giòn, vị mặn hoặc ngọt và không dùng để uống.")
+        
+        if 'bánh quy' in category.lower():
+            text_parts.append("Đây là bánh quy giòn tan, thơm mùi bơ. Bánh quy là đồ ăn, không phải đồ uống. Bánh quy có độ giòn và không dùng để uống.")
+
     name_parts = []
     if 'product_name' in product_data and pd.notna(product_data['product_name']):
-        name_parts.append(f"Sản phẩm có tên gọi {product_data['product_name']}.")
+        product_name = product_data['product_name']
+        name_parts.append(f"Sản phẩm có tên gọi {product_name}.")
+        
+        # Add product type reinforcement based on name keywords
+        if product_type == "thức uống" or any(term in product_name.lower() for term in ['cà phê', 'coffee', 'trà', 'tea', 'đá xay', 'drink', 'nước']):
+            name_parts.append("Đây là thức uống, không phải bánh ăn được.")
+        elif product_type == "món ăn" or any(term in product_name.lower() for term in ['bánh', 'cake', 'pastry', 'cookie', 'bread']):
+            name_parts.append("Đây là bánh ăn được, không phải thức uống.")
     
     if 'product_brand' in product_data and pd.notna(product_data['product_brand']):
         name_parts.append(f"Thương hiệu của sản phẩm {product_data['product_brand']}.")
-    
-    if 'category_name' in product_data and pd.notna(product_data['category_name']):
-        name_parts.append(f"Sản phẩm thuộc về danh mục {product_data['category_name']}.")
     
     if name_parts:
         text_parts.append(" ".join(name_parts))
@@ -131,81 +185,52 @@ def _create_text_for_embedding(product_data):
                 text_parts.append("Sản phẩm này hiện đang hết hàng.")
         except (ValueError, TypeError):
             pass
- 
-    if 'category_name' in product_data and pd.notna(product_data['category_name']):
-        category = product_data['category_name']
+         
+    if product_type == "thức uống":
+        text_parts.append("Sản phẩm này là THỨC UỐNG. Dùng để giải khát, không phải để ăn. Đây là đồ UỐNG, không phải đồ ĂN.")
+    elif product_type == "món ăn":
+        text_parts.append("Sản phẩm này là BÁNH hoặc MÓN ĂN. Dùng để ăn, không phải để uống. Đây là đồ ĂN, không phải đồ UỐNG.")
     
-    if any(term in category for term in ['cookie', 'biscuit']):
-        text_parts.append("Bánh quy giòn rụm, trẻ em có thể rất yêu thích.")
-
-    if any(term in category for term in ['cake']):
-        text_parts.append("Đây là món bánh ngọt mềm ngọt, bông mịn, thường được thưởng thức sau bữa ăn hoặc ăn vặt trong các buổi xế chiều.")
-
-    if any(term in category for term in ['pastry', 'pie']):
-        text_parts.append("Đây là loại bánh được nướng thơm lừng, vỏ giòn rụm, thường làm từ bột mì và có vị ngọt hoặc mặn.")
-
-    if any(term in category for term in ['drink', 'tea', 'coffee', 'chocolate', 'cacao', 'frosty']):
-        text_parts.append("Đây là một loại thức uống thơm ngon, mát, thích hợp để giải khát.")
-
-    if 'coffee' in category:
-        text_parts.append("Đây là thức uống cà phê đậm đà, giúp tỉnh táo và khơi dậy năng lượng.")
-
-    if 'tea' in category:
-        text_parts.append("Trà thanh mát, thơm đậm, có thể dùng nóng hoặc lạnh tùy theo sở thích. Đồng thời trà cũng giúp tỉnh táo.")
-
-    if any(term in category for term in ['chocolate', 'cacao']):
-        text_parts.append("Đây là thức uống từ sô cô la hoặc ca cao, hơi đắng nhẹ, béo ngậy, ngọt ngào và hấp dẫn.")
-
-    if any(term in category for term in ['season', 'specialist']):
-        text_parts.append("Đây là món bánh theo mùa, chỉ có trong thời gian giới hạn.")
-
-    if 'set' in category:
-        text_parts.append("Đây là một bộ sản phẩm gồm nhiều món tráng miệng. Có thể dùng làm quà tặng bạn bè, nguời thân vào các dịp đặc biệt")
-
-    if any(term in category for term in ['topping', 'thêm']):
-        text_parts.append("Đây là topping thêm, dùng để kết hợp với món chính nhằm tăng hương vị.")
-
     return " ".join(text_parts)
 
-def _create_metadata_dict(product_data):
-    return {
-		'product_code': product_data.get('product_code', ''),
-        'product_name': product_data.get('product_name', ''),
-        'category_name': product_data.get('category_name', '')
-	}
+def _create_metadata_dict(product_data, category_map=None):
+    metadata = {
+        'product_code': product_data.get('product_code', ''),
+        'product_name': product_data.get('product_name', '')
+    }
     
-def load_all_product_data(input_dir):
+    if category_map and 'category_id' in product_data and pd.notna(product_data['category_id']):
+        category_id = product_data['category_id']
+        if category_id in category_map:
+            metadata['category_name'] = category_map[category_id]
+    
+    return metadata   
+    
+def load_all_product_data(input_file):
     all_products = []
     
-    csv_files = glob.glob(os.path.join(input_dir, '*_products.csv'))
-    
-    if not csv_files:
-        logger.warning(f"No product CSV files found in {input_dir}")
-        return all_products
-    
-    for file_path in csv_files:
-        file_name = os.path.basename(file_path)
-        logger.info(f"Processing {file_name}")
+    file_name = os.path.basename(input_file)
+    logger.info(f"Processing {file_name}")
         
-        try:
-            df = pd.read_csv(file_path)
-            products = df.to_dict(orient='records')
-            all_products.extend(products)
-            
-        except Exception as e:
-            logger.error(f"Error loading {file_name}: {e}")
+    try:
+        df = pd.read_csv(input_file)
+        products = df.to_dict(orient='records')
+        all_products.extend(products)
+        
+    except Exception as e:
+        logger.error(f"Error loading {file_name}: {e}")
 
     return all_products
 
-def prepare_documents(products):
+def prepare_documents(products, category_map=None, category_descriptions=None):
     """Convert product data to LangChain Document objects for embedding"""
     
     documents = []
     
     for product in products:
-        text = _create_text_for_embedding(product)
+        text = _create_text_for_embedding(product, category_map, category_descriptions)
         
-        metadata = _create_metadata_dict(product)
+        metadata = _create_metadata_dict(product, category_map)
         
         doc = Document(
 			page_content=text,
@@ -219,12 +244,12 @@ def prepare_documents(products):
 
 def create_embeddings_and_store(documents):
     """Create embeddings and store them directly in the database."""
-    embeddings_model = HuggingFaceEmbeddings(
-        model_name="intfloat/e5-base-v2",
-        model_kwargs={"device": "cpu"},
-        encode_kwargs={"normalize_embeddings": True}
-    )
- 
+    model = get_embedding_model() 
+    def embed_text(text):
+        embeddings = model.encode(text, normalize_embeddings=True)
+        return embeddings.tolist()
+    
+    
     # Process in batches to avoid memory issues 
     batch_size = 50
     total_batches = (len(documents) + batch_size - 1) // batch_size
@@ -285,7 +310,7 @@ def create_embeddings_and_store(documents):
             # Process each document in the batch
             for doc in batch:
                 # Generate embedding
-                embedding_vector = embeddings_model.embed_query(doc.page_content)
+                embedding_vector = embed_text(doc.page_content)
                 
                 cursor.execute("""
                 INSERT INTO langchain_pg_embedding (id, collection_id, embedding, document, cmetadata)
@@ -298,7 +323,6 @@ def create_embeddings_and_store(documents):
                     json.dumps(doc.metadata)
                 ))
             
-            # Commit after each batch
             conn.commit()
             
         cursor.close()
@@ -309,7 +333,16 @@ def create_embeddings_and_store(documents):
     except Exception as e:
         logger.error(f"Error creating embeddings: {e}")
         raise
-    
+
+_model = None
+
+def get_embedding_model():
+    global _model
+    if _model is None:
+        logger.info(f"Load pretrained SentenceTransformer: {VIETNAMESE_MODEL}")
+        _model = SentenceTransformer(VIETNAMESE_MODEL)
+    return _model
+  
 def get_full_product_details(product_codes):
     """Retrieve full product details from app_data after vector search for testing"""
     try:
@@ -367,14 +400,10 @@ def get_full_product_details(product_codes):
 def test_search(query, top_k=3):
     """Test search functionality using vector distance with proper casting."""
     try:
-        embeddings_model = HuggingFaceEmbeddings(
-            model_name="intfloat/e5-base-v2",
-            model_kwargs={"device": "cpu"},
-            encode_kwargs={"normalize_embeddings": True}
-        )
+        model = get_embedding_model() 
         
-        query_embedding = embeddings_model.embed_query(query)
-        
+        query_embedding = model.encode(query, normalize_embeddings=True).tolist()
+         
         conn = psycopg2.connect(
             host=DB_HOST,
             port=DB_PORT,
@@ -444,25 +473,32 @@ def test_search(query, top_k=3):
         logger.error(f"Error testing search: {e}")
         return [], []
     
-def main(input_dir, run_test_search=True):
+def main(input_file, run_test_search=True):
     try:
-        products = load_all_product_data(input_dir)
+        
+        # mapping the category_name and category_id 
+        categories_df = pd.read_csv('data/processed/categories.csv')
+        category_map = dict(zip(categories_df['category_id'], categories_df['category_name']))
+        category_descriptions = dict(zip(categories_df['category_id'], categories_df['category_description']))
+        
+        products = load_all_product_data(input_file)
         if not products:
             logger.error("No products found to process")
             return 
         
-        documents = prepare_documents(products)
+        documents = prepare_documents(products, category_map, category_descriptions)
         success = create_embeddings_and_store(documents)
         if success and run_test_search:
-            test_search("Món tráng miệng mềm mịn ngọt ngào", 3)
-            test_search("Thức uống mát lạnh giúp tỉnh táo", 3)
-            test_search("Món tráng miệng cho mùa hè nóng bức", 3)
-          
+            print("\n=== TESTING SEARCH FUNCTIONALITY ===")
+            test_search("Tôi muốn tìm một món bánh ngọt mềm, bông xốp và ngọt dịu", 3)
+            test_search("Tôi đang khát nước và muốn một đồ uống mát lạnh như cà phê hoặc trà", 3)
+            test_search("Tôi muốn ăn vặt một món bánh giòn rụm có vị mặn", 3)
+                  
     except Exception as e:
         logger.error(f"Error in main function: {e}")
         return
     
 if __name__ == "__main__":
-	main('data/staging')
+	main('data/processed/products.csv')
     
 	print("Done")

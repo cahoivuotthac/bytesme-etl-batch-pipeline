@@ -1,3 +1,5 @@
+SET search_path TO app_data;
+
 \copy app_data.categories FROM 'data/processed/categories.csv' DELIMITER ',' CSV HEADER;
 
 \copy app_data.products FROM 'data/processed/products.csv' DELIMITER ',' CSV HEADER;
