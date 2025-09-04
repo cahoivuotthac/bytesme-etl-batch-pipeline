@@ -92,7 +92,7 @@ class ProductExtractor:
 			}
 			html = requests.get(product_url, headers=headers)
 			if html.status_code == 200:
-				bs = BeautifulSoup(html.content, "html5lib")
+				bs = BeautifulSoup(html.content, "html5lib") # html.content: get raw content of the webpage
 			
 			# Extract all products from the single page
 			products = self._crawl_each_page(bs)
