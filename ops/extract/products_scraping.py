@@ -91,7 +91,8 @@ class ProductExtractor:
 				'Connection': 'keep-alive'
 			}
 			html = requests.get(product_url, headers=headers)
-			bs = BeautifulSoup(html.content, "html5lib")
+			if html.status_code == 200:
+				bs = BeautifulSoup(html.content, "html5lib")
 			
 			# Extract all products from the single page
 			products = self._crawl_each_page(bs)
