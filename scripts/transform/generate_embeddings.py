@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 import psycopg2
 from langchain_core.documents import Document
 from sentence_transformers import SentenceTransformer
-from config.logger_config import setup_logger
+from utils.logger_config import setup_logger
 from psycopg2.extensions import register_adapter, AsIs
 from sentence_transformers import SentenceTransformer
 from pyvi.ViTokenizer import tokenize

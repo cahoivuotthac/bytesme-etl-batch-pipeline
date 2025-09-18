@@ -5,7 +5,7 @@ from typing import Any, Dict, List
 
 import pandas as pd
 import yaml
-from config.logger_config import setup_logger, setup_discord_notification
+from utils.logger_config import setup_logger, setup_discord_notification
 
 from ops.transform.generate_mock_data import update_product_dataset
 from ops.transform.remove_duplicates import remove_duplicates

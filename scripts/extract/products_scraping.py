@@ -6,7 +6,7 @@ from typing import Dict, List
 from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup
 import requests
-from config.logger_config import setup_logger, load_config, setup_selenium
+from utils import helpers
 
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException, TimeoutException
@@ -15,20 +15,15 @@ from selenium.webdriver.support import expected_conditions as EC
 
 import time 
 
-logger = setup_logger()
-web_config = load_config("webs_config.yml")
-driver = setup_selenium(web_config["http"]["user_agent"])
-
-import logging
-logging.getLogger('selenium').setLevel(logging.WARNING)
-logging.getLogger('urllib3').setLevel(logging.WARNING)
+logger = helpers.setup_logger("products_scraping.log")
+config = helpers.load_webconfig("webs_config.yml")
+user_agent = config["user_agent"]
 
 SCROLL_PAUSE_TIME = 3
 SLEEP_TIME = 5
+
 @dataclass 
 class ProductInfo:
-	
-	# metadata 
 	product_name: str
 	product_url: str
 	product_band: str 
@@ -37,12 +32,12 @@ class ProductInfo:
 	product_image: List[str] = field(default_factory=list)
 	product_image_type: int = 1 
 	product_image_name: str = ""
- 
-	product_code: str = "" # sku 
+
+	product_code: str = "" # sku
+	product_sizes: str = "" # "S|M|L"
 	product_description: str = ""
 	product_unit_price: int = 0
-	product_currency: str="₫"
-	product_discount_percentage: float = 0.0
+	product_discount_percent: float = 0.0
 	product_total_orders: int = 0
 	product_stock_quantity: int = 50
 	product_total_ratings: int = 0
@@ -54,45 +49,43 @@ class ProductExtractor:
   	"""
 
 	def __init__(self, websites_config: Dict, website_name: str, category_url: str):
-		# instance attributes
 		self.website_config = websites_config.get(website_name, {}) 
 		self.website_name = website_name
 		self.scraping_config = self.website_config.get('scraping', {})
-		self.popups_handled = False 
+		self.need_handle_popups = False 
 		self.category_url = category_url
 
 	def process_pages(self) -> List[ProductInfo]:
 		logger.info(f"Extracting products from: ({self.category_url})")
 	
 		all_products = []
-		current_page = self.category_url # first page 
+		first_page = self.category_url 
 
 		loading_type = self.scraping_config['loading_type']
 		if loading_type == "pagination":
-			all_products = self._crawl_pagination(current_page)
+			all_products = self._crawl_pagination(first_page)
 		elif loading_type == "single-page":
-			all_products = self._crawl_single_page(current_page)	 
+			all_products = self._crawl_single_page(first_page)	 
 		elif loading_type == "progressive":
-			all_products = self._crawl_progessive(current_page)
+			all_products = self._crawl_progessive(first_page)
 		elif loading_type == "tab-based":
-			all_products = self._crawl_tab_based(current_page)
+			all_products = self._crawl_tab_based(first_page)
    
 		logger.info(f"Products count: {len(all_products) if all_products else 0}")
-		time.sleep(5)
-  
+ 
 		return all_products
 
-	def _crawl_single_page(self, product_url:str) -> List[ProductInfo]:
+	def _crawl_single_page(self, product_url: str) -> List[ProductInfo]:
 		logger.info(f"Starting single page extraction from: {product_url}")
 	
 		try:
 			headers = {
-				'User-Agent': web_config["http"]["user_agent"],
+				'User-Agent': config["http"]["user_agent"],
 				'Connection': 'keep-alive'
 			}
 			html = requests.get(product_url, headers=headers)
 			if html.status_code == 200:
-				bs = BeautifulSoup(html.content, "html5lib") # html.content: get raw content of the webpage
+				bs = BeautifulSoup(html.content, "html5lib") 
 			
 			# Extract all products from the single page
 			products = self._crawl_each_page(bs)
@@ -109,29 +102,29 @@ class ProductExtractor:
 			return []
     
 	def _hanlde_popups(self):
-		if not self.popups_handled:
+		if not self.need_handle_popups:
 		# cookies popup 
 			try:
-				WebDriverWait(driver, 10).until(
+				WebDriverWait(user_agent, 10).until(
 				    EC.presence_of_element_located((By.ID, "CybotCookiebotDialog"))
 				)
-				allow_all_button = driver.find_element(By.ID, "CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll")
+				allow_all_button = user_agent.find_element(By.ID, "CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll")
 				allow_all_button.click()
-				WebDriverWait(driver, 5).until(
+				WebDriverWait(user_agent, 5).until(
 				    EC.invisibility_of_element_located((By.ID, "CybotCookiebotDialog"))
 				)
 			except Exception as e:
 				logger.warning(f"Cookies popup not found or failed to close: {str(e)}")
 
 			try: 
-				close_button = WebDriverWait(driver, 10).until(
+				close_button = WebDriverWait(user_agent, 10).until(
 					EC.element_to_be_clickable((By.CSS_SELECTOR, "div[class^='storefront-sdk-emotion'] button"))
 				)
 				close_button.click()
 			except Exception as e:
 				logger.warning(f"Close button not found or failed to click: {str(e)}")
 
-			self.popups_handled = True 
+			self.need_handle_popups = True 
 
 	def _add_products(self, products: List[ProductInfo], processed_urls: set) -> List[ProductInfo]:
 		products_info = []
@@ -145,7 +138,7 @@ class ProductExtractor:
 
 	def _crawl_tab_based(self, url: str) -> List[ProductInfo]:
 		try:
-			driver.get(url)
+			user_agent.get(url)
 			logger.info(f"Loading page: {url}")
 			time.sleep(3)
 			self._hanlde_popups()
@@ -155,13 +148,13 @@ class ProductExtractor:
    
 			logger.info("Waiting for tabs to be loaded ...")
 			try: 
-				tabs = WebDriverWait(driver, 15).until(
+				tabs = WebDriverWait(user_agent, 15).until(
 				    EC.presence_of_all_elements_located((By.CSS_SELECTOR, self.scraping_config["subcategory_selector"]))
 				)
 				logger.debug(f"Found {len(tabs)} tabs")
 	   
 				# extract products from the initial page 
-				html = driver.page_source 
+				html = user_agent.page_source 
 				bs = BeautifulSoup(html, 'html5lib')
 				initial_products = self._crawl_each_page(bs)
 				if initial_products:
@@ -170,12 +163,12 @@ class ProductExtractor:
 				for i in range(1, len(tabs)): 
 					try: 
 					
-						driver.execute_script("arguments[0].click();", tabs[i])
-						WebDriverWait(driver, 15).until(
+						user_agent.execute_script("arguments[0].click();", tabs[i])
+						WebDriverWait(user_agent, 15).until(
 						    EC.presence_of_all_elements_located((By.CSS_SELECTOR, self.scraping_config["product_selector"]))
 						)
 
-						html = driver.page_source
+						html = user_agent.page_source
 						bs = BeautifulSoup(html, 'html5lib')
 						products = self._crawl_each_page(bs)
 						if products:
@@ -185,13 +178,13 @@ class ProductExtractor:
 						logger.warning("Element click intercepted. Retrying...")
 						time.sleep(5)
 
-						driver.execute_script("arguments[0].click();", tabs[i])
-						products = WebDriverWait(driver, 15).until(
+						user_agent.execute_script("arguments[0].click();", tabs[i])
+						products = WebDriverWait(user_agent, 15).until(
 						    EC.presence_of_all_elements_located((By.CSS_SELECTOR, self.scraping_config["product_selector"]))
 						)
 						
 						if products: 
-							html = driver.page_source
+							html = user_agent.page_source
 							bs = BeautifulSoup(html, 'html5lib')
 							products_info.extend(self._add_products(products, processed_url))
 						else: 
@@ -200,7 +193,7 @@ class ProductExtractor:
 			except TimeoutException: 
 				logger.warning("No tabs are founded within the timeout period")
     
-				html = driver.page_source
+				html = user_agent.page_source
 				bs = BeautifulSoup(html, 'html5lib')
 				products = self._crawl_each_page(bs)
 				if products:
@@ -232,7 +225,7 @@ class ProductExtractor:
 			page_count += 1
 			try:
 				headers = {
-					'User-Agent': web_config["http"]["user_agent"],
+					'User-Agent': config["http"]["user_agent"],
 					'Connection': 'keep-alive'
 				}
 				html = requests.get(url, headers=headers)
@@ -258,7 +251,7 @@ class ProductExtractor:
 	def _crawl_progessive(self, url: str) -> List[ProductInfo]:
 		try:
 			logger.info(f"Starting progressive extraction from: {url}")
-			driver.get(url)
+			user_agent.get(url)
 			
 			# wait for the page to be fully loaded 
 			time.sleep(SLEEP_TIME)
@@ -270,21 +263,21 @@ class ProductExtractor:
 			while attempt_count < max_attemps:
 				try: 
 					# Try scrolling to make button visible
-					driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+					user_agent.execute_script("window.scrollTo(0, document.body.scrollHeight);")
 					time.sleep(SLEEP_TIME)
 	 
 					# button selector is a CSS selector including both a class and an element
-					load_more_button = driver.find_element(By.CSS_SELECTOR, self.scraping_config["button_selector"])
+					load_more_button = user_agent.find_element(By.CSS_SELECTOR, self.scraping_config["button_selector"])
 					
 					while load_more_button and load_more_button.is_displayed():
 						logger.debug(f"Load More button found: {load_more_button}")
 						
-						driver.execute_script("arguments[0].scrollIntoView(true);", load_more_button)
+						user_agent.execute_script("arguments[0].scrollIntoView(true);", load_more_button)
 						logger.debug("Clicked the Load More button.")
 		 
-						driver.execute_script("arguments[0].click();", load_more_button)
+						user_agent.execute_script("arguments[0].click();", load_more_button)
 						time.sleep(SCROLL_PAUSE_TIME)
-						load_more_button = driver.find_element(By.CSS_SELECTOR, self.scraping_config["button_selector"])
+						load_more_button = user_agent.find_element(By.CSS_SELECTOR, self.scraping_config["button_selector"])
 
 					break 
 						
@@ -301,7 +294,7 @@ class ProductExtractor:
 					continue 
  
 			logger.info("Out of the loop")
-			html = driver.page_source
+			html = user_agent.page_source
 			bs = BeautifulSoup(html, 'html5lib')
 			current_products = self._crawl_each_page(bs)
 			logger.debug(f"Extracted {len(current_products)} products from the current page.")
@@ -315,8 +308,8 @@ class ProductExtractor:
 			return []
 
 		finally: 
-			if driver in locals():
-				driver.quit()
+			if user_agent in locals():
+				user_agent.quit()
     
 		return products_info
 
@@ -372,7 +365,7 @@ class ProductExtractor:
 			logger.info(f"Extracting details from: {product_url}")
 
 			headers = {
-				'User-Agent': web_config["http"]["user_agent"]
+				'User-Agent': config["http"]["user_agent"]
 			}
 			html = requests.get(product_url, headers=headers)
 			bs = BeautifulSoup(html.content, "html5lib")

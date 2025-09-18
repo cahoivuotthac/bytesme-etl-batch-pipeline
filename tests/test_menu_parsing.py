@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import yaml
 from ops.extract.menus_crawling import scrape_website
-from config.logger_config import setup_logger, load_config
+from utils.logger_config import setup_logger, load_config
 
 results = {}
 logger = setup_logger()

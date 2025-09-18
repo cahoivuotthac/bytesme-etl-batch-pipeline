@@ -2,8 +2,8 @@ import json
 import os 
 import pandas as pd
 from ops.extract.products_scraping import ProductExtractor
-from config.logger_config import load_config
-from config.logger_config import setup_logger
+from utils.logger_config import load_config
+from utils.logger_config import setup_logger
 
 logger = setup_logger()
 config = load_config("webs_config.yml")

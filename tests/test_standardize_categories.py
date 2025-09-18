@@ -1,6 +1,6 @@
 import pandas as pd 
 from ops.transform.standardize_categories import standardize_category
-from config.logger_config import setup_logger
+from utils.logger_config import setup_logger
 
 logger = setup_logger()
 
